@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h2 class="display-4 mb-4 ms-3">{{ title }}</h2>
+
+    <div class="container-fluid">
+        {% for listing in listings %}
+        <div class="row">
+            <div class="col-md border mb-3 mx-auto px-3 row rounded">
+                <div class="col-md mx-auto text-center">
+                    <a href="{% url 'listings' listing.id %}" target="_blank">
+                        <img class="img-fluid listing-img" src="{{ listing.image }}" alt="{{listing.title}}">
+                    </a>
+                </div>
+                <div class="col-md my-auto my-auto">
+                    <h2>{{ listing.title }}</h2>
+                    <p><span class="price">${{ listing.initial_price }}</span></p>
+                    <p class="text-muted">Created {{ listing.creation_time }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="mt-3"><span><strong>No Active Auctions</strong></span></div>
+        {% endfor %}
+    </div>
+{% endblock %}

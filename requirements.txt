@@ -1,0 +1,4 @@
+django==4.0.2
+djangorestframework==3.13.1
+pillow==9.0.1
+django-imagekit==4.1.0
