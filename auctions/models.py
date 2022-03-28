@@ -84,25 +84,25 @@ class Bid(models.Model):
     def __str__(self):
         return f"Bid #{self.id} on {self.listing.title} by {self.user.username}"
     
+    
+class Answer(models.Model):
+    author = models.ForeignKey(User, related_name="author", on_delete=models.CASCADE)
+    time = models.DateTimeField(auto_now_add=True)
+    body = models.TextField(max_length=250)
+    
+    def __str__(self):
+        return f"Answer #{self.id} by {self.user.username} to Question #{self.question.pk}"
+    
         
 class Question(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name = "questions")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name = "questions")
     time = models.DateTimeField(auto_now_add=True)
     body = models.TextField(max_length=250)
+    answer = models.OneToOneField(Answer, on_delete=models.CASCADE, related_name="question", null=True)
     
     class Meta:
         ordering = ('-time',)
     
     def __str__(self):
         return f"Question #{self.id} by {self.user.username} on {self.listing.title}"
-    
-    
-class Answer(models.Model):
-    author = models.ForeignKey(User, related_name="author", on_delete=models.CASCADE)
-    time = models.DateTimeField(auto_now_add=True)
-    question = models.OneToOneField(Question, related_name="answer", on_delete=models.CASCADE)
-    body = models.TextField(max_length=250)
-    
-    def __str__(self):
-        return f"Answer #{self.id} by {self.user.username} to Question #{self.question.pk}"

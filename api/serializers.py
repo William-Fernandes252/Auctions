@@ -103,11 +103,21 @@ class ListingCreationSerializer(serializers.ModelSerializer):
         ]
         
         
-class AnswerSerializer(serializers.ModelSerializer):
-    on = serializers.DateTimeField(source='time', read_only=True)
+class ListingEditSerializer(serializers.ModelSerializer):
+    close = serializers.BooleanField(source="ended_manually", write_only=True)
+    private = serializers.BooleanField(source="public", write_only=True) 
     
     class Meta:
-        model = Question
+        model = Listing
+        fields = ['close', 'private']
+        
+        
+class AnswerSerializer(serializers.ModelSerializer):
+    on = serializers.DateTimeField(source='time', read_only=True)
+    author = serializers.CharField(source='author.get_full_name', read_only=True)
+    
+    class Meta:
+        model = Answer
         fields = [
             'author',
             'on',
@@ -126,7 +136,7 @@ class AnswerCreationSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='time', read_only=True)
     user = serializers.CharField(source='user.get_full_name', read_only=True)
-    answer = AnswerSerializer(source='answer', read_only=True)
+    answer = AnswerSerializer(read_only=True)
     
     class Meta:
         model = Question
