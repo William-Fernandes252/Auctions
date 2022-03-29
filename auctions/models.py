@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.utils import timezone
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now, timedelta, datetime
 from imagekit.models import ProcessedImageField
 from imagekit.processors import ResizeToFill
 from authentication.models import User
@@ -91,7 +91,7 @@ class Answer(models.Model):
     body = models.TextField(max_length=250)
     
     def __str__(self):
-        return f"Answer #{self.id} by {self.user.username} to Question #{self.question.pk}"
+        return f"{self.author} {((now() - self.time).total_seconds()//3600):.0f} hours ago: {self.body}"
     
         
 class Question(models.Model):
@@ -105,4 +105,4 @@ class Question(models.Model):
         ordering = ('-time',)
     
     def __str__(self):
-        return f"Question #{self.id} by {self.user.username} on {self.listing.title}"
+        return f"{self.user} {((now() - self.time).total_seconds()//3600):.0f} hours ago: {self.body}"

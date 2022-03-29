@@ -2,6 +2,9 @@ from django.test import TestCase, Client
 from authentication.models import User
 
 
+AUTH_API_BASE_URL = "/auth/api"
+
+
 class AuthAPITestCase(TestCase):
     
     def setUp(self):
@@ -24,7 +27,7 @@ class AuthAPITestCase(TestCase):
         """Test login endpoint with valid credentials
         """
         response = self.client.post(
-            path='/auth/api/login/', 
+            path=AUTH_API_BASE_URL + '/login/', 
             data={'username': 'tester', 'password': 'QWERTY!@#'},
             content_type='application/json',
         )
@@ -35,7 +38,7 @@ class AuthAPITestCase(TestCase):
         """Test login endpoint with invalid credentials
         """
         response = self.client.post(
-            path='/auth/api/login/', 
+            path=AUTH_API_BASE_URL + '/login/', 
             data={'username': 'tester', 'password': 'qwerty123'},
             content_type='application/json',
         )
@@ -45,7 +48,7 @@ class AuthAPITestCase(TestCase):
     def test_logout(self):
         """Test logout endpoint
         """
-        response = self.client.get(path='/auth/api/logout/')
+        response = self.client.get(path=AUTH_API_BASE_URL+'/logout/')
         self.assertEqual(response.status_code, 200)
         
         
@@ -53,7 +56,7 @@ class AuthAPITestCase(TestCase):
         """Test the registration endpoint with valid credentials
         """
         response = self.client.post(
-            path='/auth/api/register/',
+            path=AUTH_API_BASE_URL + '/register/',
             data={
                 'first_name': 'William',
                 'last_name': 'Fernandes',
@@ -71,7 +74,7 @@ class AuthAPITestCase(TestCase):
         """Test the registration endpoint with invalid credentials
         """
         response = self.client.post(
-            path='/auth/api/register/',
+            path=AUTH_API_BASE_URL + '/register/',
             data={
                 'first_name': 'William',
                 'last_name': 'Fernandes',
@@ -89,7 +92,7 @@ class AuthAPITestCase(TestCase):
         """Test the login endpoint with user registered with register endpoint
         """
         registration_response = self.client.post(
-            path='/auth/api/register/',
+            path=AUTH_API_BASE_URL + '/register/',
             data={
                 'first_name': 'William',
                 'last_name': 'Fernandes',
@@ -101,7 +104,7 @@ class AuthAPITestCase(TestCase):
             content_type='application/json',
         )
         login_response = self.client.post(
-            path='/auth/api/login/', 
+            path=AUTH_API_BASE_URL + '/login/', 
             data={'username': 'william', 'password': 'QWERTY!@#'},
             content_type='application/json',
         )

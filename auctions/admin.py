@@ -38,15 +38,12 @@ class QuestionAdmin(admin.ModelAdmin):
         'id',
         'user',
         'time',
-        'answer',
+        'body',
     )
-    list_display_links = ('id', 'answer')
+    list_display_links = ('id',)
     list_per_page = 10
     
     search_fields = ('id', 'user')
-    
-    def answer(self, obj):
-        return obj.answer.pk
     
     
 class AnswerAdmin(admin.ModelAdmin):
@@ -54,15 +51,12 @@ class AnswerAdmin(admin.ModelAdmin):
         'id',
         'author',
         'time',
-        'question',
+        'body',
     )
-    list_display_links = ('id', 'question')
+    list_display_links = ('id',)
     list_per_page = 10
     
-    search_fields = ('id', 'user')
-    
-    def question(self, obj):
-        return obj.question.pk
+    search_fields = ('id', 'author')
 
 
 admin.site.register(Listing, ListingAdmin)

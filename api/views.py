@@ -33,10 +33,9 @@ listing_details_view = ListingDetailsAPIView.as_view()
 class ListingCreateAPIView(generics.CreateAPIView):
     queryset = Listing.objects.all()
     serializer_class = ListingCreationSerializer
+    permission_classes = (IsAuthenticated,)
     
     def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
-            raise PermissionDenied({"denied": "Must be authenticated to perform this action."})
         serializer.save(author=self.request.user)
          
 listing_create_view = ListingCreateAPIView.as_view()
@@ -45,6 +44,7 @@ listing_create_view = ListingCreateAPIView.as_view()
 class BidListAPIView(generics.ListAPIView):
     queryset = Bid.objects.all()
     serializer_class = BidListSerializer
+    permission_classes = (IsAuthenticated,)
     
 bid_list_view = BidListAPIView.as_view()
 
