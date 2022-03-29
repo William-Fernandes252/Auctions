@@ -41,7 +41,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise ValidationError({"password": "The two passwords do not match."})
         return attrs
         
-        
     def create(self, validated_data):
         user = User.objects.create(
             first_name=validated_data['first_name'],
@@ -52,10 +51,4 @@ class RegistrationSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
-        return user
-    
-    
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField(write_only=True)
-    password = serializers.CharField(write_only=True)
-        
+        return user    

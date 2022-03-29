@@ -12,7 +12,7 @@ class ListingQuerySet(models.QuerySet):
             Q(title__icontains=query) |\
             Q(description__icontains=query)
         )
-        queryset = self.is_public().filter(lookup=lookup)
+        queryset = self.is_public().filter(lookup)
         if user is not None:
             user_qs = self.filter(user=user)
             queryset = (queryset | user_qs).distinct()
@@ -24,3 +24,6 @@ class ListingQuerySet(models.QuerySet):
             user_qs = self.filter(user=user)
             queryset = (queryset | user_qs).distinct()
         return queryset
+    
+    def from_category(self, category):
+        return self.filter(category__name=category)

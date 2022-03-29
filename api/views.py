@@ -7,6 +7,7 @@ from .serializers import *
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from authentication.classes import CsrfExemptSessionAuthentication
 from rest_framework.exceptions import PermissionDenied
+from .mixins import UserListingsQuerysetMixin, ListingQuerysetMixin
 
 
 @api_view(["GET"])
@@ -14,16 +15,14 @@ def api_home(request, *args, **kwargs):
     return Response({"message": "Hello there :D"})
 
 
-class ListingListAPIView(generics.ListAPIView):
-    queryset = Listing.objects.active()
-    serializer_class = ListingListSerializer
+class ListingListAPIView(ListingQuerysetMixin, generics.ListAPIView):
+    serializer_class = ListingAbstractSerializer
     permission_classes = (AllowAny,)
     
 listing_list_view = ListingListAPIView.as_view()
 
 
-class ListingDetailsAPIView(generics.RetrieveAPIView):
-    queryset = Listing.objects.active()
+class ListingDetailsAPIView(ListingQuerysetMixin, generics.RetrieveAPIView):
     serializer_class = ListingDetailsSerializer
     lookup_field = 'pk'
     pagination_class = None
@@ -37,7 +36,7 @@ class ListingCreateAPIView(generics.CreateAPIView):
     
     def perform_create(self, serializer):
         if not self.request.user.is_authenticated:
-            raise PermissionDenied("Must be authenticated to perform this action.")
+            raise PermissionDenied({"denied": "Must be authenticated to perform this action."})
         serializer.save(author=self.request.user)
          
 listing_create_view = ListingCreateAPIView.as_view()
@@ -60,7 +59,7 @@ class ListingBidListView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         if not self.request.user.is_authenticated:
-            raise PermissionDenied("Must be authenticated to perform this action.")
+            raise PermissionDenied({"denied": "Must be authenticated to perform this action."})
         serializer.save(
             user=self.request.user, 
             listing=Listing.objects.get(pk=self.kwargs.get('pk'))
@@ -79,7 +78,7 @@ class ListingQuestionListAPIView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         if not self.request.user.is_authenticated:
-            raise PermissionDenied("Must be authenticated to perform this action.")
+            raise PermissionDenied({"denied": "Must be authenticated to perform this action."})
         serializer.save(
             user=self.request.user, 
             listing=Listing.objects.get(pk=self.kwargs.get('pk'))
@@ -98,14 +97,26 @@ class WatchlistAPIView(generics.ListAPIView):
 watchlist_api_view = WatchlistAPIView.as_view()
 
 
-class UserListingsAPIView(generics.ListAPIView):
+class UserListingsAPIView(UserListingsQuerysetMixin, generics.ListAPIView):
     serializer_class = ListingListSerializer
     permission_classes = (IsAuthenticated,)
     
-    def get_queryset(self):
-        return self.request.user.listings.all()
+user_listing_list_view = UserListingsAPIView.as_view()
+
+
+class ListingEditAPIView(UserListingsQuerysetMixin, generics.RetrieveUpdateAPIView):
+    serializer_class = ListingEditSerializer
+    permission_classes = (IsAuthenticated,)
+    lookup_field ='pk'
     
-user_listings_view = UserListingsAPIView.as_view()
+    def update(self, request, *args, **kwargs):
+        if self.get_object().author != request.user:
+            raise PermissionDenied(
+                {"denied": "Only the author of a listing is allowed to edit it."}
+            )
+        return super(ListingEditAPIView, self).update(request, *args, **kwargs)
+    
+user_listing_details_view = ListingEditAPIView.as_view()
 
 
 class WatchListingAPIView(generics.GenericAPIView):
@@ -137,7 +148,7 @@ class AnswerQuestionAPIView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         
         if listing.author != request.user:
-            raise PermissionDenied({"Denied": "Only the author of the listing is allowed to answer questions."})
+            raise PermissionDenied({"denied": "Only the author of the listing is allowed to answer questions."})
         
         question.answer = serializer.save(author=request.user, question=question)
         question.save()

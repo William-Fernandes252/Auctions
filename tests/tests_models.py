@@ -1,25 +1,28 @@
-from django.test import Client, TestCase, RequestFactory
+from django.test import Client, TestCase
 from django.db.models import Max
-from .models import *
-from .views import *
+from auctions.models import *
+from auctions.views import *
 
 
-class AuctionsTestCase(TestCase):
+class ModelsTestCase(TestCase):
     
     def setUp(self):
         
-        # Define user to test view were the login is required
-        self.factory = RequestFactory()
-        self.user = User.objects.create_user(username='jacob', email='jacob@…', password='top_secret')
-        
-        # Create users
+        # Set users
         u1 = User.objects.create(username='user1', email='user1@example.com', password = 'QWERTY!@#', first_name="User", last_name="One")
         u2 = User.objects.create(username='user2', email='user2@example.com', password = 'QWERTY!@#', first_name="User", last_name="Two")
         u3 = User.objects.create(username='user3', email='user3@example.com', password = 'QWERTY!@#', first_name="User", last_name="Three")
         
-        # Create listings
-        l1 = Listing.objects.create(author=u1, description="", title="Test 1", initial_price=1000.00, category=Category.objects.get(pk=1), duration=14)
+        # Define categories
+        c1 = Category.objects.create(name='c1')
+        c2 = Category.objects.create(name='c2')
+        c3 = Category.objects.create(name='c3')
+        c4 = Category.objects.create(name='c4')
+        c5 = Category.objects.create(name='c5')
         
+        # Set listings
+        l1 = Listing.objects.create(author=u1, description="", title="Test 1", initial_price=1000.00, category=Category.objects.get(pk=1), duration=14)
+
         u2.watchlist.add(l1)
         
         l2 = Listing.objects.create(author=u2, description="", title="Test 2", initial_price=500.00, category=Category.objects.get(pk=2), duration=28)
@@ -62,6 +65,7 @@ class AuctionsTestCase(TestCase):
         l = Listing.objects.get(author=u, title="Test 5")
         self.assertTrue(l.is_valid_listing())
         
+        
     def test_listings_count(self):
         """Check listings count"""
         self.assertEqual(Listing.objects.count(), 5)
@@ -73,12 +77,14 @@ class AuctionsTestCase(TestCase):
         l = Listing.objects.get(author=u, title="Test 1")
         self.assertEqual(l.watchers.count(), 1)
         
+        
     def test_index(self):
         """Check index page"""
         c = Client()
-        response = c.get("")
+        response = c.get("/auctions/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["listings"].count(), 4)
+        self.assertEqual(len(response.context["listings"]), 5)
+        
         
     def test_invalid_listing_page(self):
         """Check invalid listing page"""

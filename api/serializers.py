@@ -20,13 +20,17 @@ class ListingAbstractSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name='listing-details',
         lookup_field='pk',
+        read_only=True
     )
+    current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
     
     class Meta:
         model = Listing
         fields = [
             'title',
+            'current_bid',
             'url',
+            'end_time',
         ]
         
         
@@ -46,14 +50,14 @@ class BidListSerializer(serializers.ModelSerializer):
 
 
 class ListingListSerializer(
-    serializers.ModelSerializer,
-    ListingSerializerMixin):
+    ListingSerializerMixin,
+    serializers.ModelSerializer):
     
     url = serializers.HyperlinkedIdentityField(
         view_name='listing-details',
         lookup_field='pk',
     )
-    current_bid = BidAbstractSerializer(source='bids.first')
+    current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
     
     class Meta:
         model = Listing
@@ -68,11 +72,15 @@ class ListingListSerializer(
 
 
 class ListingDetailsSerializer(
-    serializers.ModelSerializer,
-    ListingSerializerMixin):
+    ListingSerializerMixin,
+    serializers.ModelSerializer):
 
     category = serializers.SerializerMethodField(read_only=True)
     current_bid = BidAbstractSerializer(source='bids.first')
+    all_bids = serializers.HyperlinkedIdentityField(
+        view_name = 'listing-bid-list',
+        lookup_field = 'pk'
+    )
     
     class Meta:
         model = Listing
@@ -83,6 +91,7 @@ class ListingDetailsSerializer(
             'category',
             'initial_price',
             'current_bid',
+            'all_bids',
             'creation_time',
             'end_time',
             'public',
@@ -103,13 +112,31 @@ class ListingCreationSerializer(serializers.ModelSerializer):
         ]
         
         
-class ListingEditSerializer(serializers.ModelSerializer):
-    close = serializers.BooleanField(source="ended_manually", write_only=True)
-    private = serializers.BooleanField(source="public", write_only=True) 
+class ListingEditSerializer(
+    serializers.ModelSerializer,
+    ListingSerializerMixin):
+    
+    category = serializers.SerializerMethodField(read_only=True)
+    ended = serializers.BooleanField(source='ended_manually')
+    private = serializers.BooleanField(source='public') 
+    bids = BidAbstractSerializer(read_only=True, many=True)
     
     class Meta:
         model = Listing
-        fields = ['close', 'private']
+        fields = [
+            'title',
+            'description',
+            'category',
+            'initial_price',
+            'bids',
+            'creation_time',
+            'end_time',
+            'ended',
+            'private',
+        ]
+        read_only_fields = list(
+            filter(lambda field: field != 'ended' or field != 'private', fields)
+        )
         
         
 class AnswerSerializer(serializers.ModelSerializer):

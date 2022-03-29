@@ -7,9 +7,10 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import User
 from rest_framework import generics
-from .serializers import RegistrationSerializer, LoginSerializer
+from .serializers import RegistrationSerializer
 from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from .classes import CsrfExemptSessionAuthentication
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
@@ -81,21 +82,22 @@ register_api_view = RegisterAPIView.as_view()
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
+@authentication_classes([CsrfExemptSessionAuthentication])
 def login_api_view(request, *args, **kwargs):
-    serializer = LoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = authenticate(
-        request, 
-        username=serializer.validated_data.get('username'), 
-        password=serializer.validated_data.get('password')
-    )
-    if user is not None:
+    data = request.data
+    username = data.get('username')
+    password = data.get('password')
+    
+    user = authenticate(request, username=username, password=password)
+    if user:
         login(request, user)
-        return Response(serializer.data)
-    raise ValidationError({"error": "Invalid credentials"})
+        return Response(request.data, status=200)
+    
+    raise ValidationError({"error": "Invalid credentials."}, code=400)
 
 
 @api_view(["GET"])
 def logout_api_view(request, *args, **kwargs):
     logout(request)
-    return Response()
+    return Response(status=200)

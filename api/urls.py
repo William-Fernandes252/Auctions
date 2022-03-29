@@ -21,5 +21,6 @@ urlpatterns = [
     ),
     path("listings/watch/", views.watch_listing, name="watch-listing"),
     path("user/watchlist/", views.watchlist_api_view, name="listing-watchlist"),
-    path("user/listings/", views.user_listings_view, name="user-listings"),
+    path("user/listings/", views.user_listing_list_view, name="user-listings"),
+    path("user/listings/<int:pk>/", views.user_listing_details_view, name="user-listings-details"),
 ]

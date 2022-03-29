@@ -33,9 +33,7 @@ class IndexView(TemplateView):
             
         elif self.see_search_results:
             q = self.request.GET["q"]
-            listings = Listing.objects.active().filter(
-                title__contains=q,
-            )
+            listings = Listing.objects.active().search(q)
             context['title'] = f'Search Results for "{q}"'
             
         else:
@@ -44,8 +42,9 @@ class IndexView(TemplateView):
             
         paginator = Paginator(listings, 50)
         page_number = self.request.GET.get('page')
+        context['categories'] = Category.objects.all()
         context['listings'] = paginator.get_page(page_number)
-        context['latest_bids'] = Bid.objects.all(limit=5)
+        context['latest_bids'] = Bid.objects.all()[:5]
         
         return context
     
@@ -79,7 +78,7 @@ def listing_view(request, listing_id):
     context['listing'] = listing
     context['finished'] = listing.is_finished()
     if context['finished']:
-        return render(request, "auctions/listings.html", context)
+        return render(request, "auctions/listing.html", context)
         
     time_remaining = listing.end_time - timezone.now()
     context['days'] = time_remaining.days
@@ -102,7 +101,7 @@ def listing_view(request, listing_id):
     context["bid_form"] = BidForm()
     context["question_form"] = QuestionForm()
     
-    return render(request, "auctions/listings.html", context)
+    return render(request, "auctions/listing.html", context)
     
     
 @login_required(login_url='login')
@@ -155,7 +154,7 @@ def watch(request, listing_id):
         watchings.remove(listing)
     else:
         watchings.add(listing)
-    return HttpResponseRedirect(reverse("listings", kwargs={'listing_id': listing_id}))
+    return HttpResponseRedirect(reverse("listing", kwargs={'listing_id': listing_id}))
 
 
 @login_required(login_url='login')
