@@ -10,7 +10,7 @@ class AuthAPITestCase(TestCase):
     def setUp(self):
         """Setup for test the authentication API endpoints
         """
-        user = User.objects.create(
+        self.user = User.objects.create(
             username='tester', 
             password='QWERTY!@#', 
             email='tester.user@email.com',
@@ -18,8 +18,8 @@ class AuthAPITestCase(TestCase):
             last_name='User',
             is_superuser=True,
         )
-        user.set_password('QWERTY!@#')
-        user.save()
+        self.user.set_password('QWERTY!@#')
+        self.user.save()
         self.client = Client()
         
     
@@ -48,6 +48,7 @@ class AuthAPITestCase(TestCase):
     def test_logout(self):
         """Test logout endpoint
         """
+        self.client.force_login(self.user)
         response = self.client.get(path=AUTH_API_BASE_URL+'/logout/')
         self.assertEqual(response.status_code, 200)
         

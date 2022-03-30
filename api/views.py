@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import generics
+from rest_framework import generics, views
 from auctions.models import *
 from .serializers import *
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -10,9 +12,18 @@ from rest_framework.exceptions import PermissionDenied
 from .mixins import UserListingsQuerysetMixin, ListingQuerysetMixin
 
 
-@api_view(["GET"])
-def api_home(request, *args, **kwargs):
-    return Response({"message": "Hello there :D"})
+class HomeAPIView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        return HttpResponseRedirect(reverse('listing-list'))
+    
+api_home_view = HomeAPIView.as_view()
+    
+
+class UserHomeAPIView(views.APIView):
+    def get(self, request, *args, **kwargs):
+            return HttpResponseRedirect(reverse('user-listing-list'))
+        
+user_home_api_view = UserHomeAPIView.as_view()
 
 
 class ListingListAPIView(ListingQuerysetMixin, generics.ListAPIView):
@@ -94,7 +105,7 @@ class WatchlistAPIView(generics.ListAPIView):
     def get_queryset(self):
         return self.request.user.watchlist.all()
     
-watchlist_api_view = WatchlistAPIView.as_view()
+user_watchlist_api_view = WatchlistAPIView.as_view()
 
 
 class UserListingsAPIView(UserListingsQuerysetMixin, generics.ListAPIView):
@@ -119,7 +130,7 @@ class ListingEditAPIView(UserListingsQuerysetMixin, generics.RetrieveUpdateAPIVi
 user_listing_details_view = ListingEditAPIView.as_view()
 
 
-class WatchListingAPIView(generics.GenericAPIView):
+class WatchListingAPIView(views.APIView):
     authentication_classes = (CsrfExemptSessionAuthentication,)
     permission_classes = (IsAuthenticated,)
     
@@ -155,4 +166,4 @@ class AnswerQuestionAPIView(generics.GenericAPIView):
         
         return Response(serializer.data, status=201)
     
-answer_question_view = AnswerQuestionAPIView.as_view() 
+answer_question_view = AnswerQuestionAPIView.as_view()

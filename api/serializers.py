@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from auctions.models import Listing, Bid, Question, Answer, Category
 from .mixins import ListingSerializerMixin
+from rest_framework.exceptions import ValidationError
 
 
 class BidAbstractSerializer(serializers.ModelSerializer):
@@ -118,7 +119,6 @@ class ListingEditSerializer(
     
     category = serializers.SerializerMethodField(read_only=True)
     ended = serializers.BooleanField(source='ended_manually')
-    private = serializers.BooleanField(source='public') 
     bids = BidAbstractSerializer(read_only=True, many=True)
     
     class Meta:
@@ -132,11 +132,23 @@ class ListingEditSerializer(
             'creation_time',
             'end_time',
             'ended',
-            'private',
+            'public',
         ]
         read_only_fields = list(
-            filter(lambda field: field != 'ended' or field != 'private', fields)
+            filter(
+                lambda field: field != 'public' and field != 'ended', 
+                fields
+            )
         )
+            
+    def validate(self, data):
+        if hasattr(self, 'initial_data'):
+            invalid_keys = set(self.initial_data.keys()) - set(self.fields.keys())
+            if invalid_keys:
+                raise ValidationError(
+                    {'details': f'Got unknown field {invalid_keys.pop()}'}
+                )
+        return data
         
         
 class AnswerSerializer(serializers.ModelSerializer):
@@ -157,7 +169,7 @@ class AnswerCreationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Answer
-        fields = ['body',]
+        fields = ['body']
         
         
 class QuestionSerializer(serializers.ModelSerializer):
@@ -168,6 +180,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = [
+            'id',
             'user',
             'on',
             'body',

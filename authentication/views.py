@@ -6,11 +6,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import User
-from rest_framework import generics
-from .serializers import RegistrationSerializer
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from .classes import CsrfExemptSessionAuthentication
+from .serializers import RegistrationSerializer
+from rest_framework import generics, views
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
@@ -81,23 +81,45 @@ class RegisterAPIView(generics.CreateAPIView):
 register_api_view = RegisterAPIView.as_view()
 
 
-@api_view(["POST"])
-@permission_classes([AllowAny])
-@authentication_classes([CsrfExemptSessionAuthentication])
-def login_api_view(request, *args, **kwargs):
-    data = request.data
-    username = data.get('username')
-    password = data.get('password')
+# @api_view(["POST"])
+# @permission_classes([AllowAny])
+# @authentication_classes([CsrfExemptSessionAuthentication])
+# def login_api_view(request, *args, **kwargs):
+#     data = request.data
+#     username = data.get('username')
+#     password = data.get('password')
     
-    user = authenticate(request, username=username, password=password)
-    if user:
-        login(request, user)
-        return Response(request.data, status=200)
+#     user = authenticate(request, username=username, password=password)
+#     if user:
+#         login(request, user)
+#         return Response(request.data, status=200)
     
-    raise ValidationError({"error": "Invalid credentials."}, code=400)
+#     raise ValidationError({"error": "Invalid credentials."}, code=400)
 
 
-@api_view(["GET"])
-def logout_api_view(request, *args, **kwargs):
-    logout(request)
-    return Response(status=200)
+class LoginAPIView(views.APIView):
+    permission_classes = (AllowAny,)
+    authentication_classes = (CsrfExemptSessionAuthentication,)
+    
+    def post(self, request):
+        data = request.data
+        username = data.get('username')
+        password = data.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return Response(request.data, status=200)
+        raise ValidationError({"error": "Invalid credentials."}, code=400)
+    
+login_api_view = LoginAPIView.as_view()
+
+
+class LogoutAPIView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        logout(request)
+        return Response(status=200)
+    
+logout_api_view = LogoutAPIView.as_view()
