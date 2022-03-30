@@ -26,7 +26,6 @@ class SetUp(TestCase):
      def setUp(self):
         """Setup for test the auctions API endpoints
         """
-        
         # Set the request factory, authenticated user and anonymous user
         self.factory = APIRequestFactory(enforce_csrf_checks=False)
         self.user = User.objects.create(
@@ -437,7 +436,6 @@ class AutheticatedRequestsTestCase(SetUp):
         )
         request.user = self.user
         response = listing_create_view(request)
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         
     

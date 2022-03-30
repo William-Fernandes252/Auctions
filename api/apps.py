@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 from . import receivers
 from django.db.models import signals
+from sys import argv
 
 
 class ApiConfig(AppConfig):
@@ -8,8 +9,10 @@ class ApiConfig(AppConfig):
     name = 'api'
     
     def ready(self):
-        from auctions.models import Listing, Bid, Question, Answer
+        if 'test' in argv:
+            return # Disable signals during tests
         
+        from auctions.models import Listing, Bid, Question, Answer
         signals.post_save.connect(
             receivers.notify_listing_closed,
             sender=Listing,

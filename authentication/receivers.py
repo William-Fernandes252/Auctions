@@ -1,2 +1,3 @@
 def new_user(sender, **kwargs):
-    print(f"The user {kwargs.get('username')} has been registered.")
+    user = kwargs.get('instance')
+    print(f"The user {user} has been registered.")

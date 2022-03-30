@@ -159,7 +159,7 @@ class AnswerQuestionAPIView(generics.GenericAPIView):
         if listing.author != request.user:
             raise PermissionDenied({"denied": "Only the author of the listing is allowed to answer questions."})
         
-        question.answer = serializer.save(author=request.user, question=question)
+        question.answer = serializer.save(author=request.user)
         question.save()
         
         return Response(serializer.data, status=201)

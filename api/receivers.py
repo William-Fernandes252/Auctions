@@ -15,19 +15,19 @@ def notify_listing_created(sender, **kwargs):
     listing = kwargs.get('instance')
     if not kwargs.get('created'):
         return
-    print(f'[{get_timestamp()}] "The listing {listing.name} has been created."')
+    print(f'[{get_timestamp()}] "The listing {listing} has been created."')
     
     
 def notify_bid(sender, **kwargs):
-    bid = kwargs.get('bid')
-    print(f'[{get_timestamp()}] "{bid.user} offered {bid.value} on {bid.listint}."')
+    bid = kwargs.get('instance')
+    print(f'[{get_timestamp()}] "{bid.user} offered {bid.value} on {bid.listing}."')
     
     
 def notify_question_pub(sender, **kwargs):
-    question = kwargs.get('question')
-    print(f'[{get_timestamp()}] "{question.user} published a question on {question.listint}."')
+    question = kwargs.get('instance')
+    print(f'[{get_timestamp()}] "{question.user} published a question on {question.listing}."')
     
     
 def notify_answer_pub(sender, **kwargs):
-    answer = kwargs.get('answer')
-    print(f'[{get_timestamp()}] "{answer.author} answered {answer.question.user} on {answer.question.listint}."')
+    answer = kwargs.get('instance')
+    print(f'[{get_timestamp()}] "{answer.author} answered a question."')
