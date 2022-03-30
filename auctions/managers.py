@@ -7,7 +7,7 @@ class ListingQuerySet(models.QuerySet):
     def is_public(self):
         return self.filter(public=True)
     
-    def search(self, query, user=None): # TODO: test this method
+    def search(self, query, user=None):
         lookup = (
             Q(title__icontains=query) |\
             Q(description__icontains=query)
