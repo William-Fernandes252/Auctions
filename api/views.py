@@ -1,7 +1,5 @@
-from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import generics, views
 from auctions.models import *
@@ -115,7 +113,7 @@ class UserListingsAPIView(UserListingsQuerysetMixin, generics.ListAPIView):
 user_listing_list_view = UserListingsAPIView.as_view()
 
 
-class ListingEditAPIView(UserListingsQuerysetMixin, generics.RetrieveUpdateAPIView):
+class EditListingAPIView(UserListingsQuerysetMixin, generics.RetrieveUpdateAPIView):
     serializer_class = ListingEditSerializer
     permission_classes = (IsAuthenticated,)
     lookup_field ='pk'
@@ -125,9 +123,9 @@ class ListingEditAPIView(UserListingsQuerysetMixin, generics.RetrieveUpdateAPIVi
             raise PermissionDenied(
                 {"denied": "Only the author of a listing is allowed to edit it."}
             )
-        return super(ListingEditAPIView, self).update(request, *args, **kwargs)
+        return super(EditListingAPIView, self).update(request, *args, **kwargs)
     
-user_listing_details_view = ListingEditAPIView.as_view()
+user_listing_details_view = EditListingAPIView.as_view()
 
 
 class WatchListingAPIView(views.APIView):
@@ -136,7 +134,7 @@ class WatchListingAPIView(views.APIView):
     
     def post(self, request):
         data = request.data
-        listing = get_object_or_404(Listing, pk=data.get('id'))
+        listing = generics.get_object_or_404(Listing, pk=data.get('id'))
         watchlist = request.user.watchlist
         if listing in watchlist.all():
             watchlist.remove(listing)
@@ -152,9 +150,9 @@ class AnswerQuestionAPIView(generics.GenericAPIView):
     authentication_classes = (CsrfExemptSessionAuthentication,)
     permission_classes = (IsAuthenticated,)
     
-    def post(self, request, *args, **kwargs):
-        listing = get_object_or_404(Listing, pk=kwargs.get('listing_pk'))
-        question = get_object_or_404(Question, pk=kwargs.get('question_pk'), listing=listing)
+    def post(self, request, **kwargs):
+        listing = generics.get_object_or_404(Listing, pk=kwargs.get('listing_pk'))
+        question = generics.get_object_or_404(Question, pk=kwargs.get('question_pk'), listing=listing)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         

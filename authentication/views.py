@@ -81,22 +81,6 @@ class RegisterAPIView(generics.CreateAPIView):
 register_api_view = RegisterAPIView.as_view()
 
 
-# @api_view(["POST"])
-# @permission_classes([AllowAny])
-# @authentication_classes([CsrfExemptSessionAuthentication])
-# def login_api_view(request, *args, **kwargs):
-#     data = request.data
-#     username = data.get('username')
-#     password = data.get('password')
-    
-#     user = authenticate(request, username=username, password=password)
-#     if user:
-#         login(request, user)
-#         return Response(request.data, status=200)
-    
-#     raise ValidationError({"error": "Invalid credentials."}, code=400)
-
-
 class LoginAPIView(views.APIView):
     permission_classes = (AllowAny,)
     authentication_classes = (CsrfExemptSessionAuthentication,)
