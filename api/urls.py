@@ -3,12 +3,36 @@ from . import views
 
 
 urlpatterns = [
-    path("", views.api_home_view, name="home"),
-    path("listings/", views.listing_list_view, name="listing-list"),
-    path("listings/create/", views.listing_create_view, name="listing-create"),
-    path("listings/<int:pk>/", views.listing_details_view, name="listing-details"),
-    path("bids/", views.bid_list_view, name="bid-list"),
-    path("listings/<int:pk>/bids/", views.listing_bid_list_view, name="listing-bid-list"),
+    path(
+        "", 
+        views.api_home_view, 
+        name="home"
+    ),
+    path(
+        "listings/", 
+        views.listing_list_view, 
+        name="listing-list"
+    ),
+    path(
+        "listings/create/", 
+        views.listing_create_view, 
+        name="listing-create"
+    ),
+    path(
+        "listings/<int:pk>/", 
+        views.listing_details_view, 
+        name="listing-details"
+    ),
+    path(
+        "bids/", 
+        views.bid_list_view, 
+        name="bid-list"
+    ),
+    path(
+        "listings/<int:pk>/bids/", 
+        views.listing_bid_list_view, 
+        name="listing-bid-list"
+    ),
     path(
         "listings/<int:pk>/questions/", 
         views.listing_question_list_view, 
@@ -19,9 +43,34 @@ urlpatterns = [
         views.answer_question_view, 
         name="answer-question"
     ),
-    path("listings/watch/", views.watch_listing, name="watch-listing"),
-    path("user/watchlist/", views.user_watchlist_api_view, name="listing-watchlist"),
-    path("user/", views.user_home_api_view, name="user-home"),
-    path("user/listings/", views.user_listing_list_view, name="user-listing-list"),
-    path("user/listings/<int:pk>/", views.user_listing_details_view, name="user-listing-details"),
+    path(
+        "listings/watch/", 
+        views.watch_listing, 
+        name="watch-listing"
+    ),
+    path(
+        "user/", 
+        views.user_home_api_view, 
+        name="user-home"
+    ),
+    path(
+        "user/watchlist/", 
+        views.user_watchlist_api_view, 
+        name="listing-watchlist"
+    ),
+    path(
+        "user/listings/", 
+        views.user_listing_list_view, 
+        name="user-listing-list"
+    ),
+    path(
+        "user/bids/",
+        views.user_bid_list_view,
+        name="user-bid-list"
+    ),
+    path(
+        "user/listings/<int:pk>/", 
+        views.user_listing_details_view, 
+        name="user-listing-details"
+    ),
 ]

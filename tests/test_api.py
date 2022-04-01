@@ -12,6 +12,7 @@ from api.views import (
     watch_listing,
     user_watchlist_api_view,
     user_listing_list_view,
+    user_bid_list_view,
     user_listing_details_view,
 )
 from auctions.models import Listing, Bid, Question, Category, Answer
@@ -134,6 +135,7 @@ class SetUp(TestCase):
         Bid.objects.create(user=user2, listing=listing3, value=700)
         Bid.objects.create(user=user3, listing=listing2, value=14000)
         Bid.objects.create(user=user3, listing=listing4, value=10000.00)
+        Bid.objects.create(user=self.user, listing=listing1, value=3000.00)
         
         # Answers
         question1.answer = Answer.objects.create(author=user2, body="Probably not...")
@@ -174,8 +176,8 @@ class AuctionsAPITestCase(SetUp):
         current_bid = result.get('current_bid')
         
         self.assertEqual(title, 'listing1')
-        self.assertEqual(current_bid.get('value'), '2500.00')
-        self.assertEqual(current_bid.get('user'), 'User Two')
+        self.assertEqual(current_bid.get('value'), '3000.00')
+        self.assertEqual(current_bid.get('user'), 'Tester User')
         
         
     def test_listing_search(self):
@@ -312,6 +314,15 @@ class UnauthorizedRequestsTestCase(SetUp):
         self.assertEqual(response.status_code, 403)
         
         
+    def test_unauthenticated_user_bid_list_view(self):
+        """Test unauthenticated user bids list endpoint request
+        """
+        request = self.factory.get(API_BASE_URL + 'user/bids/')
+        request.user = self.anonymous
+        response = user_bid_list_view(request)
+        self.assertEqual(response.status_code, 403)
+        
+        
     def test_unauthenticated_user_listing_details_view(self):
         """Test unauthenticated user listing details endpoint request
         """
@@ -344,7 +355,7 @@ class AutheticatedRequestsTestCase(SetUp):
         self.assertEqual(response.status_code, 200)
         
         data = response.data
-        self.assertEqual(data.get('count'), 6)
+        self.assertEqual(data.get('count'), 7)
         
         result = data.get('results')[0]
         self.assertEqual(result.get('value'), '14000.00')
@@ -511,6 +522,20 @@ class AutheticatedRequestsTestCase(SetUp):
         
         results = data.get('results')
         self.assertEqual(results[0].get('title'), 'listing4')
+        
+        
+    def test_user_bid_list_view(self):
+        """Test user listings list endpoint
+        """
+        request = self.factory.get(API_BASE_URL + 'user/listings/')
+        request.user = self.user
+        response = user_bid_list_view(request)
+        
+        data = response.data
+        self.assertEqual(data.get('count'), 1)
+        
+        results = data.get('results')
+        self.assertEqual(results[0].get('value'), '3000.00')
         
         
     def test_user_listing_details_view(self):

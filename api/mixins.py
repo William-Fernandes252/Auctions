@@ -12,7 +12,7 @@ class ListingSerializerMixin:
 class ListingQuerysetMixin:
     queryset = Listing.objects.active()
     
-    def get_queryset(self): # TODO: test it
+    def get_queryset(self):
         queryset = super().get_queryset()
         q = self.request.GET.get('q')
         category = self.request.GET.get('category')

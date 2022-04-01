@@ -113,6 +113,18 @@ class UserListingsAPIView(UserListingsQuerysetMixin, generics.ListAPIView):
 user_listing_list_view = UserListingsAPIView.as_view()
 
 
+class UserBidsAPIView(generics.ListAPIView):
+    queryset = Bid.objects.all()
+    serializer_class = BidListSerializer
+    permission_classes = (IsAuthenticated,)
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(user=self.request.user)
+
+user_bid_list_view = UserBidsAPIView.as_view()
+
+
 class EditListingAPIView(UserListingsQuerysetMixin, generics.RetrieveUpdateAPIView):
     serializer_class = ListingEditSerializer
     permission_classes = (IsAuthenticated,)
