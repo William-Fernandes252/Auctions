@@ -141,7 +141,6 @@ user_listing_details_view = EditListingAPIView.as_view()
 
 
 class WatchListingAPIView(views.APIView):
-    authentication_classes = (CsrfExemptSessionAuthentication,)
     permission_classes = (IsAuthenticated,)
     
     def post(self, request):

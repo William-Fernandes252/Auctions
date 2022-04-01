@@ -89,6 +89,23 @@ class AuthAPITestCase(TestCase):
         self.assertEqual(response.status_code, 400)
         
         
+    def test_registration_with_missing_fields(self):
+        """Test the registration endpoint with missing fields.
+        """
+        response = self.client.post(
+            path=AUTH_API_BASE_URL + '/register/',
+            data={
+                'first_name': 'William',
+                'last_name': 'Fernandes',
+                'email': 'william.fernandes@email.com',
+                'username': 'william',
+                'password': 'QWERTY!@#',
+            },
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+        
+        
     def test_login_with_registered_user(self):
         """Test the login endpoint with user registered with register endpoint
         """

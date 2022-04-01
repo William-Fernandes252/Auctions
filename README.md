@@ -1,5 +1,5 @@
 # Auctions
-CS50w Auctions Project.
+CS50w Auctions Project allong with a full featured API.
 
 ![Listings page](/screenshots/main.jpg)
 
@@ -12,6 +12,7 @@ As custom features (in addition to those required by the course) I implemented:
 - A custom styling with the **Bootstrap framework**, wich includes a navigation bar with a dropdown for navigation categories and a inline count of items in the watchlist;
 - A **search bar**, where the users can query for listings titles;
 - And a **flash messages** system with the Django messages functionallity, where the users are informed about their operations in the app, like posting bids and closing actions.
+- An API for with the Django REST Framework, where a client can retrieve the data from the database in JSON format.
 
 Also, during this project I could learn about
 - The **Object Relational Mapping** (ORM) system that Django provides as a **database-abstraction API** to develop data driven web applications;
@@ -22,15 +23,14 @@ Also, during this project I could learn about
 - User authentication;
 - Context managment in dinamically generated web pages;
 - Unit testing with Python unittest and the Django Tests extension for it;
-- Docker consteiners and the importance of standardization of environments during web development for conpatibility assurence.
+- Docker consteiners and the importance of standardization of environments during web development for conpatibility assurence;
+- Design of APIs REST.
 
 In order to install and run it, follow the steps given bellow.
 
-## Prerequisites
-- Last versions of [Python](https://www.python.org/) and [Django](https://www.djangoproject.com/);
-
 ## Installing and running
 - Clone this repository with `https://github.com/William-Fernandes252/Auctions.git`;
+- Install the dependencies for this project with `pip install -r requirements.txt`;
 - Inside of `/Auctions` run `python manage.py runserver`;
 - Finally, go to [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 

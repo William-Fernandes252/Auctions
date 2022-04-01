@@ -99,7 +99,7 @@ class Question(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name = "questions")
     time = models.DateTimeField(auto_now_add=True)
     body = models.TextField(max_length=250)
-    answer = models.OneToOneField(Answer, on_delete=models.CASCADE, related_name="question", null=True)
+    answer = models.OneToOneField(Answer, on_delete=models.CASCADE, related_name="question", null=True, blank=True)
     
     class Meta:
         ordering = ('-time',)

@@ -83,7 +83,6 @@ register_api_view = RegisterAPIView.as_view()
 
 class LoginAPIView(views.APIView):
     permission_classes = (AllowAny,)
-    authentication_classes = (CsrfExemptSessionAuthentication,)
     
     def post(self, request):
         data = request.data

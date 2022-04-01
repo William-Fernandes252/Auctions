@@ -79,7 +79,8 @@ WSGI_APPLICATION = 'commerce.wsgi.application'
 # API settings
 
 auth_classes = [
-    "rest_framework.authentication.SessionAuthentication",
+    "authentication.classes.CsrfExemptSessionAuthentication", 
+    # This is temporary. Token based authentication will be implemented soon.
 ]
 
 REST_FRAMEWORK = {
