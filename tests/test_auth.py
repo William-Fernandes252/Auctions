@@ -1,16 +1,16 @@
-from django.test import TestCase, Client
-from authentication.models import User
+from django import test
+from authentication import models as auth_models
 
 
 AUTH_API_BASE_URL = "/auth/api"
 
 
-class AuthAPITestCase(TestCase):
+class AuthAPITestCase(test.TestCase):
     
     def setUp(self):
         """Setup for test the authentication API endpoints
         """
-        self.user = User.objects.create(
+        self.user = auth_models.User.objects.create(
             username='tester', 
             password='QWERTY!@#', 
             email='tester.user@email.com',
@@ -20,7 +20,7 @@ class AuthAPITestCase(TestCase):
         )
         self.user.set_password('QWERTY!@#')
         self.user.save()
-        self.client = Client()
+        self.client = test.Client()
         
     
     def test_login_with_valid_credentials(self):

@@ -1,22 +1,9 @@
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 from django.contrib.auth.models import AnonymousUser
-from api.views import (
-    listing_list_view,
-    listing_create_view,
-    listing_details_view,
-    bid_list_view,
-    listing_bid_list_view,
-    listing_question_list_view,
-    answer_question_view,
-    watch_listing,
-    user_watchlist_api_view,
-    user_listing_list_view,
-    user_bid_list_view,
-    user_listing_details_view,
-)
-from auctions.models import Listing, Bid, Question, Category, Answer
-from authentication.models import User
+from api import views
+from auctions import models
+from authentication import models as auth_models
 
 
 API_BASE_URL = "/auctions/api/"
@@ -29,7 +16,7 @@ class SetUp(TestCase):
         """
         # Set the request factory, authenticated user and anonymous user
         self.factory = APIRequestFactory(enforce_csrf_checks=False)
-        self.user = User.objects.create(
+        self.user = auth_models.User.objects.create(
             username='tester', 
             password='QWERTY!@#', 
             email='tester.user@email.com',
@@ -40,21 +27,21 @@ class SetUp(TestCase):
         
         # Set instances of the models
         # Users
-        user1 = User.objects.create(
+        user1 = auth_models.User.objects.create(
             username='user1', 
             password='QWERTY!@#', 
             email='user1.test@email.com',
             first_name='User',
             last_name='One',
         )
-        user2 = User.objects.create(
+        user2 = auth_models.User.objects.create(
             username='user2', 
             password='QWERTY!@#', 
             email='user2.test@email.com',
             first_name='User',
             last_name='Two',
         )
-        user3 = User.objects.create(
+        user3 = auth_models.User.objects.create(
             username='user3', 
             password='QWERTY!@#', 
             email='user1.test@email.com',
@@ -63,12 +50,12 @@ class SetUp(TestCase):
         )
         
         # Categories
-        category1 = Category.objects.create(name='music')
-        category2 = Category.objects.create(name='vehicles')
-        category3 = Category.objects.create(name='toys')
+        category1 = models.Category.objects.create(name='music')
+        category2 = models.Category.objects.create(name='vehicles')
+        category3 = models.Category.objects.create(name='toys')
         
         # Listings
-        listing1 = Listing.objects.create(
+        listing1 = models.Listing.objects.create(
             author=user1, 
             description="instrument", 
             title="listing1",
@@ -76,7 +63,7 @@ class SetUp(TestCase):
             duration=7,
             category=category1
         )
-        listing2 = Listing.objects.create(
+        listing2 = models.Listing.objects.create(
             author=user2, 
             description="cart", 
             title="listing2",
@@ -84,7 +71,7 @@ class SetUp(TestCase):
             duration=14,
             category=category2
         )
-        listing3 = Listing.objects.create(
+        listing3 = models.Listing.objects.create(
             author=user3, 
             description="action figure", 
             title="listing3",
@@ -92,7 +79,7 @@ class SetUp(TestCase):
             duration=30,
             category=category3
         )
-        listing4 = Listing.objects.create(
+        listing4 = models.Listing.objects.create(
             author=self.user, 
             description="my listing", 
             title="listing4",
@@ -102,46 +89,46 @@ class SetUp(TestCase):
         )
         
         # Questions
-        question1 = Question.objects.create(
+        question1 = models.Question.objects.create(
             user=user1, 
             listing=listing2, 
             body="This testcase is going to pass?"
         )
-        question2 = Question.objects.create(
+        question2 = models.Question.objects.create(
             user=user2, 
             listing=listing1, 
             body="This testcase is going to pass?"
         )
-        question3 = Question.objects.create(
+        question3 = models.Question.objects.create(
             user=user3, 
             listing=listing1, 
             body="This testcase is going to pass?"
         )
-        question4 = Question.objects.create(
+        question4 = models.Question.objects.create(
             user=user3, 
             listing=listing2, 
             body="This testcase is going to pass?"
         )
-        question5 = Question.objects.create(
+        question5 = models.Question.objects.create(
             user=user1, 
             listing=listing3, 
             body="This testcase is going to pass?"
         )
         
         # Bids
-        Bid.objects.create(user=user1, listing=listing2, value=12000)
-        Bid.objects.create(user=user2, listing=listing1, value=2500)
-        Bid.objects.create(user=user1, listing=listing3, value=600)
-        Bid.objects.create(user=user2, listing=listing3, value=700)
-        Bid.objects.create(user=user3, listing=listing2, value=14000)
-        Bid.objects.create(user=user3, listing=listing4, value=10000.00)
-        Bid.objects.create(user=self.user, listing=listing1, value=3000.00)
+        models.Bid.objects.create(user=user1, listing=listing2, value=12000)
+        models.Bid.objects.create(user=user2, listing=listing1, value=2500)
+        models.Bid.objects.create(user=user1, listing=listing3, value=600)
+        models.Bid.objects.create(user=user2, listing=listing3, value=700)
+        models.Bid.objects.create(user=user3, listing=listing2, value=14000)
+        models.Bid.objects.create(user=user3, listing=listing4, value=10000.00)
+        models.Bid.objects.create(user=self.user, listing=listing1, value=3000.00)
         
         # Answers
-        question1.answer = Answer.objects.create(author=user2, body="Probably not...")
-        question2.answer = Answer.objects.create(author=user1, body="No.")
-        question3.answer = Answer.objects.create(author=user1, body="Nah")
-        question4.answer = Answer.objects.create(author=user2, body="YES!")
+        question1.answer = models.Answer.objects.create(author=user2, body="Probably not...")
+        question2.answer = models.Answer.objects.create(author=user1, body="No.")
+        question3.answer = models.Answer.objects.create(author=user1, body="Nah")
+        question4.answer = models.Answer.objects.create(author=user2, body="YES!")
         
         # Watchlist
         self.user.watchlist.add(listing1)
@@ -155,7 +142,7 @@ class AuctionsAPITestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listings/')
         request.user = self.anonymous
-        response = listing_list_view(request)
+        response = views.listing_list_view(request)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -169,7 +156,7 @@ class AuctionsAPITestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listings/')
         request.user = self.anonymous
-        response = listing_list_view(request)
+        response = views.listing_list_view(request)
         
         result = response.data.get('results')[0]
         title = result.get('title')
@@ -188,7 +175,7 @@ class AuctionsAPITestCase(SetUp):
             {'q': '2', 'category': 'vehicles'}
         )
         request.user = self.anonymous
-        response = listing_list_view(request)
+        response = views.listing_list_view(request)
         
         data = response.data
         self.assertEqual(data.get('count'), 1)
@@ -207,7 +194,7 @@ class AuctionsAPITestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listings/<int:pk>/')
         request.user = self.anonymous
-        response = listing_details_view(request, pk=1)
+        response = views.listing_details_view(request, pk=1)
         self.assertEqual(response.status_code, 200)
         
         listing_data = response.data
@@ -225,7 +212,7 @@ class UnauthorizedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/bids/')
         request.user = self.anonymous
-        response = bid_list_view(request)
+        response = views.bid_list_view(request)
         self.assertEqual(response.status_code, 403)
         
         
@@ -234,7 +221,7 @@ class UnauthorizedRequestsTestCase(SetUp):
         """
         request = self.factory.post(API_BASE_URL + '/listing/<int:pk>/bids/', {'value': '15000.00'})
         request.user = self.anonymous
-        response = listing_bid_list_view(request, pk=2)
+        response = views.bid_list_view(request, pk=2)
         self.assertEqual(response.status_code, 403)
     
     
@@ -253,7 +240,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.anonymous
-        response = listing_create_view(request)
+        response = views.listing_create_view(request)
         self.assertEqual(response.status_code, 403)
         
         
@@ -266,7 +253,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             format='json' 
         )
         request.user = self.anonymous
-        response = listing_question_list_view(request, pk=3)
+        response = views.listing_question_list_view(request, pk=3)
         self.assertEqual(response.status_code, 403)
     
 
@@ -280,7 +267,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             format='json' 
         )
         request.user = self.user
-        response = answer_question_view(request, listing_pk=2, question_pk=4)
+        response = views.answer_question_view(request, listing_pk=2, question_pk=4)
         self.assertEqual(response.status_code, 403)
         
         
@@ -289,7 +276,7 @@ class UnauthorizedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/watchlist/')
         request.user = self.anonymous
-        response = user_watchlist_api_view(request)
+        response = views.user_watchlist_api_view(request)
         self.assertEqual(response.status_code, 403)
         
         
@@ -301,7 +288,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             {'id': 3}
         )
         request.user = self.anonymous
-        response = watch_listing(request)
+        response = views.watch_listing(request)
         self.assertEqual(response.status_code, 403)
         
         
@@ -310,7 +297,7 @@ class UnauthorizedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/listings/')
         request.user = self.anonymous
-        response = user_listing_list_view(request)
+        response = views.user_listing_list_view(request)
         self.assertEqual(response.status_code, 403)
         
         
@@ -319,7 +306,7 @@ class UnauthorizedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/bids/')
         request.user = self.anonymous
-        response = user_bid_list_view(request)
+        response = views.user_bid_list_view(request)
         self.assertEqual(response.status_code, 403)
         
         
@@ -328,7 +315,7 @@ class UnauthorizedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/listings/<int:pk>')
         request.user = self.anonymous
-        response = user_listing_list_view(request, pk=1)
+        response = views.user_listing_details_view(request, pk=1)
         self.assertEqual(response.status_code, 403)
         
         
@@ -340,7 +327,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             {'public': False, 'ended': False},
         )
         request.user = self.anonymous
-        response = user_listing_details_view(request, pk=4)
+        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 403)
     
 
@@ -351,7 +338,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/bids/')
         request.user = self.user
-        response = bid_list_view(request)
+        response = views.bid_list_view(request)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -370,7 +357,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listing/<int:pk>/bids/')
         request.user = self.user
-        response = listing_bid_list_view(request, pk=2)
+        response = views.listing_bid_list_view(request, pk=2)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -388,7 +375,7 @@ class AutheticatedRequestsTestCase(SetUp):
             format='json'
         )
         request.user = self.user
-        response = listing_bid_list_view(request, pk=2)
+        response = views.listing_bid_list_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
         
         
@@ -407,7 +394,7 @@ class AutheticatedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.user
-        response = listing_create_view(request)
+        response = views.listing_create_view(request)
         self.assertEqual(response.status_code, 400)
         
         
@@ -426,7 +413,7 @@ class AutheticatedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.user
-        response = listing_create_view(request)
+        response = views.listing_create_view(request)
         self.assertEqual(response.status_code, 400)
         
         
@@ -446,7 +433,7 @@ class AutheticatedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.user
-        response = listing_create_view(request)
+        response = views.listing_create_view(request)
         self.assertEqual(response.status_code, 201)
         
     
@@ -455,7 +442,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'listings/<int:pk>/questions/')
         request.user = self.anonymous
-        response = listing_question_list_view(request, pk=3)
+        response = views.listing_question_list_view(request, pk=3)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -476,7 +463,7 @@ class AutheticatedRequestsTestCase(SetUp):
             format='json' 
         )
         request.user = self.user
-        response = listing_question_list_view(request, pk=2)
+        response = views.listing_question_list_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
         
         
@@ -491,7 +478,7 @@ class AutheticatedRequestsTestCase(SetUp):
             format='json' 
         )
         request.user = self.user
-        response = answer_question_view(request, listing_pk=2, question_pk=4)
+        response = views.answer_question_view(request, listing_pk=2, question_pk=4)
         self.assertEqual(response.status_code, 403)
         
         
@@ -504,9 +491,9 @@ class AutheticatedRequestsTestCase(SetUp):
             {'body': 'Yes.'},
             format='json'
         )
-        author = Listing.objects.get(pk=2).author
+        author = models.Listing.objects.get(pk=2).author
         request.user = author
-        response = answer_question_view(request, listing_pk=2, question_pk=4)
+        response = views.answer_question_view(request, listing_pk=2, question_pk=4)
         self.assertEqual(response.status_code, 201)
         
         
@@ -515,7 +502,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/listings/')
         request.user = self.user
-        response = user_listing_list_view(request)
+        response = views.user_listing_list_view(request)
         
         data = response.data
         self.assertEqual(data.get('count'), 1)
@@ -529,7 +516,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/listings/')
         request.user = self.user
-        response = user_bid_list_view(request)
+        response = views.user_bid_list_view(request)
         
         data = response.data
         self.assertEqual(data.get('count'), 1)
@@ -543,7 +530,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/listings/<int:pk>/')
         request.user = self.user
-        response = user_listing_details_view(request, pk=4)
+        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -559,7 +546,7 @@ class AutheticatedRequestsTestCase(SetUp):
             {'close': 'yes'},
         )
         request.user = self.user
-        response = user_listing_details_view(request, pk=4)
+        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 400)
         
     
@@ -571,7 +558,7 @@ class AutheticatedRequestsTestCase(SetUp):
             {'public': False},
         )
         request.user = self.user
-        response = user_listing_details_view(request, pk=4)
+        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 200)
         
         
@@ -580,7 +567,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'user/watchlist/')
         request.user = self.user
-        response = user_watchlist_api_view(request)
+        response = views.user_watchlist_api_view(request)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -599,5 +586,5 @@ class AutheticatedRequestsTestCase(SetUp):
             {'id': 3}
         )
         request.user = self.user
-        response = watch_listing(request)
+        response = views.watch_listing(request)
         self.assertEqual(response.status_code, 200)
