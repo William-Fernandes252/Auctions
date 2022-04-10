@@ -1,10 +1,10 @@
-from .models import *
-from django.forms import ModelForm
+from . import models
+from django import forms
 
 
-class ListingForm(ModelForm):
+class ListingForm(forms.ModelForm):
     class Meta:
-        model = Listing
+        model = models.Listing
         fields = ["title", "image",  "description", "initial_price", "duration", "category"]
         
     def __init__(self, *args, **kwargs):
@@ -13,9 +13,9 @@ class ListingForm(ModelForm):
             visible.field.widget.attrs['class'] = "form-control"
             
             
-class BidForm(ModelForm):
+class BidForm(forms.ModelForm):
     class Meta:
-        model = Bid
+        model = models.Bid
         fields = ['value']
         
     def __init__(self, *args, **kwargs):
@@ -24,21 +24,21 @@ class BidForm(ModelForm):
             visible.field.widget.attrs['class'] = "form-control"
             
                  
-class QuestionForm(ModelForm):
+class QuestionForm(forms.ModelForm):
     class Meta:
-        model = Question
+        model = models.Question
         fields = ['body']
         
     def __init__(self, *args, **kwargs):
-        super(Question, self).__init__(*args, **kwargs)
+        super(models.Question, self).__init__(*args, **kwargs)
         self.visible_fields()[0].field.widget.attrs['class'] = "form-control w-75 h-25"
         
         
-class AnswerForm(ModelForm):
+class AnswerForm(forms.ModelForm):
     class Meta:
-        model = Answer
+        model = models.Answer
         fields = ['body']
         
     def __init__(self, *args, **kwargs):
-        super(Question, self).__init__(*args, **kwargs)
+        super(models.Answer, self).__init__(*args, **kwargs)
         self.visible_fields()[0].field.widget.attrs['class'] = "form-control w-75 h-25"

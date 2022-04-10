@@ -1,5 +1,4 @@
 from auctions.models import Listing
-from rest_framework import serializers
 
 
 class ListingSerializerMixin:    

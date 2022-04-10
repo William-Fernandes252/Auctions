@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from . import receivers
 from django.db.models import signals
-from sys import argv
+import sys
 
 
 class ApiConfig(AppConfig):
@@ -9,7 +9,7 @@ class ApiConfig(AppConfig):
     name = 'api'
     
     def ready(self):
-        if 'test' in argv:
+        if 'test' in sys.argv:
             return # Disable signals during tests
         
         from auctions.models import Listing, Bid, Question, Answer

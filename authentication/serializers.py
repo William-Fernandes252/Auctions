@@ -1,19 +1,18 @@
 from rest_framework import serializers
 from .models import User
-from django.contrib.auth.password_validation import validate_password
-from rest_framework.validators import UniqueValidator
-from rest_framework.exceptions import ValidationError
+from django.contrib.auth import password_validation
+from rest_framework import validators, exceptions
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())],
+        validators=[validators.UniqueValidator(queryset=User.objects.all())],
         write_only=True,   
     )
     password = serializers.CharField(
         required=True,
-        validators=[validate_password],
+        validators=[password_validation.validate_password],
         write_only=True,
     )
     password2 = serializers.CharField(
@@ -38,7 +37,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         
     def validate(self, attrs):
         if attrs.get('password') != attrs.get('password2'):
-            raise ValidationError({"password": "The two passwords do not match."})
+            raise exceptions.ValidationError({"password": "The two passwords do not match."})
         return attrs
         
     def create(self, validated_data):

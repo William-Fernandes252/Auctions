@@ -1,14 +1,18 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import models as auth_models
 from imagekit.models import ProcessedImageField
 from imagekit.processors import ResizeToFill
+from imagekit import (
+    models as ImagekitModels,
+    processors as ImagekitProcessors
+)
 
 
-class User(AbstractUser):
-    picture = ProcessedImageField(
+class User(auth_models.AbstractUser):
+    picture = ImagekitModels.ProcessedImageField(
         blank=True, 
         upload_to='pictures/%Y/%m/%d', 
         processors=[
-            ResizeToFill(400, 400)
+            ImagekitProcessors.ResizeToFill(400, 400)
         ],
         format='JPEG',
         options={'quality': 100}
