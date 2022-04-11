@@ -29,7 +29,11 @@ class Listing(models.Model):
         (30, "One month")
     )
     
-    author = models.ForeignKey(auth_models.User, related_name="listings", on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        auth_models.User, 
+        related_name="listings", 
+        on_delete=models.CASCADE
+    )
     title = models.CharField(max_length=64)
     description = models.TextField(max_length=1000, blank=True)
     initial_price = models.DecimalField(
@@ -48,7 +52,7 @@ class Listing(models.Model):
     )
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category')
     watchers = models.ManyToManyField(auth_models.User, blank=True, related_name="watchlist")
-    creation_time = models.DateTimeField(auto_now_add=True)
+    creation_time = models.DateTimeField()
     end_time = models.DateTimeField()
     duration = models.IntegerField(choices=DURATIONS)
     ended_manually = models.BooleanField(default=False)
