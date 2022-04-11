@@ -136,3 +136,6 @@ templates/static/vendor/
 
 # Media
 media/
+
+# Celery scheduler files
+celerybeat*
