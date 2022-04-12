@@ -1,4 +1,4 @@
-from auctions import models, views
+from auctions import models
 from authentication import models as auth_models
 from django import test
 

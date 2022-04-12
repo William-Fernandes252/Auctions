@@ -81,15 +81,15 @@ def listing_view(request, listing_id):
         context['watching'] = listing in request.user.watchlist.all()
     except AttributeError:
         context['watching'] = False
-    context['author'] = request.user == models.listing.author
+    context['author'] = request.user == listing.author
     
     try:
         context['highest_bid'] = models.listing.bids.first().value
-        context['current_bid'] = request.user.bids.filter(listing=listing).first() == models.listing.bids.first()
+        context['current_bid'] = request.user.bids.filter(listing=listing).first() == listing.bids.first()
     except AttributeError:
         context['highest_bid'] = False
         
-    context['author'] = request.user == models.listing.author
+    context['author'] = request.user == listing.author
     context["bid_form"] = forms.BidForm()
     context["question_form"] = forms.QuestionForm()
     
@@ -109,22 +109,22 @@ def bid(request, listing_id):
         if not is_valid:
             messages.error(request, "Bid denied. A bid must exceed the intial price.")
         elif is_valid and is_highest:
-            new_bid.bid.listing = listing
-            new_bid.bid.user = request.user
-            new_bid.bid.save()
+            new_bid.listing = listing
+            new_bid.user = request.user
+            new_bid.save()
             messages.success(request, "Bid posted!")
         
-    return http.HttpResponseRedirect(urls.reverse('listing', kwargs={'listing_id': models.listing.id}))
+    return http.HttpResponseRedirect(urls.reverse('listing', kwargs={'listing_id': listing.id}))
 
 
 @auth_decorators.login_required(login_url='login')
 def close_listing(request, listing_id):
     listing = models.Listing.objects.get(pk=listing_id)
     if request.user == models.listing.user:
-        models.listing.ended_manually = True
-        models.listing.save()
+        listing.ended_manually = True
+        listing.save()
         messages.success(request, "Auction closed! Wait until the winner to get in touch.")
-    return http.HttpResponseRedirect(urls.reverse('listing', kwargs={'listing_id': models.listing.id}))
+    return http.HttpResponseRedirect(urls.reverse('listing', kwargs={'listing_id': listing.id}))
     
 
 @auth_decorators.login_required(login_url='login')

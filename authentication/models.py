@@ -1,6 +1,4 @@
 from django.contrib.auth import models as auth_models
-from imagekit.models import ProcessedImageField
-from imagekit.processors import ResizeToFill
 from imagekit import (
     models as ImagekitModels,
     processors as ImagekitProcessors

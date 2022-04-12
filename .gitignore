@@ -139,3 +139,6 @@ media/
 
 # Celery scheduler files
 celerybeat*
+
+# Database files
+data/
