@@ -95,7 +95,7 @@ ipython_config.py
 __pypackages__/
 
 # Celery stuff
-celerybeat-schedule
+celerybeat-schedule*
 celerybeat.pid
 
 # SageMath parsed files
@@ -136,9 +136,6 @@ templates/static/vendor/
 
 # Media
 media/
-
-# Celery scheduler files
-celerybeat*
 
 # Database files
 data/
