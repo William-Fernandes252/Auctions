@@ -1,0 +1,31 @@
+:root {
+    --primary-color: gold;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0.75em var(--primary-color);
+}
+
+#navbar a.nav-link {
+    color: var(--primary-color);
+}
+
+.auction-list {
+    max-height: 25vh;
+}
+
+img.listing-img {
+    max-height: 25vh;
+}
+
+.highest-bid {
+    font-size: 1.2em;
+}
+
+@media (min-width: 910px) {
+    .sidebar.sidebar-fixed {
+        width: 275px;
+    }
+}

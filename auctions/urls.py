@@ -5,10 +5,10 @@ from . import views
 urlpatterns = [
     
     # Active Listings view
-    path("", views.IndexView.as_view(), name="index"),
-    path("category/<str:category>", views.IndexView.as_view(), name="category"),
-    path("watchlist", views.IndexView.as_view(see_watchlist=True), name="watchlist"),
-    path("search", views.IndexView.as_view(see_search_results=True), name="search"),
+    path("", views.ListingListView.as_view(), name="index"),
+    path("category/<str:category>", views.ListingListView.as_view(), name="category"),
+    path("watchlist", views.ListingListView.as_view(watchlist=True), name="watchlist"),
+    path("search", views.ListingListView.as_view(), name="search"),
     
     # Create listing view
     path("create", views.create_listing, name="create"),
@@ -22,4 +22,5 @@ urlpatterns = [
     
     # API endpoints
     path("api/", include("api.urls"))
+    
 ]

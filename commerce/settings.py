@@ -32,7 +32,7 @@ dotenv.load_dotenv(dotenv_path=BASE_DIR / '.env')
 SECRET_KEY = environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = environ.get('DEBUG')
 
 ALLOWED_HOSTS = list(environ.get('ALLOWED_HOSTS'))
 
@@ -76,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'auctions.context_processors.default_listing_img'
             ],
         },
     },

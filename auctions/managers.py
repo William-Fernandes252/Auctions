@@ -18,12 +18,11 @@ class ListingQuerySet(models.QuerySet):
             queryset = (queryset | user_qs).distinct()
         return queryset
     
-    def active(self, user=None):
+    
+    def active(self):
         queryset = self.is_public().filter(ended_manually=False, end_time__gte=datetime.now())
-        if user is not None:   
-            user_qs = self.filter(user=user)
-            queryset = (queryset | user_qs).distinct()
         return queryset
+        
     
     def from_category(self, category):
-        return self.filter(category__name=category)
+        return self.active().filter(category__name=category)

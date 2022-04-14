@@ -5,6 +5,10 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from . import forms, models
 from django.views.generic import base as base_views
+from django.views import generic
+
+
+BASE_TITLE = "Auctions |"
 
 
 class IndexView(base_views.TemplateView):
@@ -44,16 +48,46 @@ class IndexView(base_views.TemplateView):
         return context
     
     
+class ListingListView(generic.ListView):
+    template_name = 'auctions/index.html'
+    queryset = models.Listing.objects.active()
+    ordering = ('end_time',)
+    paginate_by = 10
+    watchlist = False
+
+    def get_queryset(self, **kwargs):
+        queryset = super().get_queryset()
+        if category := kwargs.get('category'):
+            queryset = queryset.from_category(category)
+        elif self.watchlist:
+            queryset = self.request.user.watchlist.active()
+        elif q := self.request.GET.get('q'):
+            queryset = queryset.search(query=q)
+        return queryset
+            
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['title'] = "Active Listings"
+        if category := kwargs.get('category'):
+            context['title'] = f"{category.title()}"
+        elif self.watchlist:
+            context['title'] = f"Watchlist"
+        elif q := self.request.GET.get('q'):
+            context['title'] = f"Search results for {q}"  
+        context['latest_bids'] = models.Bid.objects.all()[:5]
+        return context
+        
+        
 @auth_decorators.login_required(login_url='login')
 def create_listing(request):
     if request.method == "POST":
         form = forms.ListingForm(request.POST)
         if form.is_valid():
             listing = form.save(commit=False)
-            models.listing.author = request.user
-            models.listing.save()
+            listing.author = request.user
+            listing.save()
             messages.success(request, "Auction started!")
-            return http.HttpResponseRedirect(urls.reverse("listing", kwargs={'listing_id': models.listing.id}))
+            return http.HttpResponseRedirect(urls.reverse("listing", kwargs={'listing_id': listing.id}))
         else:
             return shortcuts.render(request, "auctions/create.html", {
                 "form": form
@@ -68,11 +102,11 @@ def listing_view(request, listing_id):
 
     context = {}
     context['listing'] = listing
-    context['finished'] = models.listing.is_finished()
+    context['finished'] = listing.is_finished()
     if context['finished']:
-        return shortcuts.render(request, "auctions/models.listing.html", context)
+        return shortcuts.render(request, "auctions/listing.html", context)
         
-    time_remaining = models.listing.end_time - timezone.now()
+    time_remaining = listing.end_time - timezone.now()
     context['days'] = time_remaining.days
     context['hours'] = int(time_remaining.seconds/3600)
     context['minutes'] = int(time_remaining.seconds/60 - (context['hours'] * 60))
@@ -93,7 +127,7 @@ def listing_view(request, listing_id):
     context["bid_form"] = forms.BidForm()
     context["question_form"] = forms.QuestionForm()
     
-    return shortcuts.render(request, "auctions/models.listing.html", context)
+    return shortcuts.render(request, "auctions/listing.html", context)
     
     
 @auth_decorators.login_required(login_url='login')

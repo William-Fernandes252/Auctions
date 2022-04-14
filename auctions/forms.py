@@ -8,9 +8,12 @@ class ListingForm(forms.ModelForm):
         fields = ["title", "image",  "description", "initial_price", "duration", "category"]
         
     def __init__(self, *args, **kwargs):
-        super(ListingForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = "form-control"
+        self.fields.get('duration').widget.attrs['class'] = "form-select"
+        self.fields.get('category').widget.attrs['class'] = "form-select"
+        
             
             
 class BidForm(forms.ModelForm):
@@ -19,9 +22,10 @@ class BidForm(forms.ModelForm):
         fields = ['value']
         
     def __init__(self, *args, **kwargs):
-        super(BidForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = "form-control"
+        super().__init__(*args, **kwargs)
+        self.fields.get('value').widget.attrs['class'] = "form-control"
+        self.fields.get('value').widget.attrs['placeholder'] = "Post a bid"
+        self.fields.get('value').widget.attrs['aria-describedby'] = "bid-btn"
             
                  
 class QuestionForm(forms.ModelForm):
@@ -30,8 +34,9 @@ class QuestionForm(forms.ModelForm):
         fields = ['body']
         
     def __init__(self, *args, **kwargs):
-        super(models.Question, self).__init__(*args, **kwargs)
-        self.visible_fields()[0].field.widget.attrs['class'] = "form-control w-75 h-25"
+        super().__init__(*args, **kwargs)
+        self.fields.get('body').widget.attrs['class'] = "form-control"
+        self.fields.get('body').widget.attrs['rows'] = 1
         
         
 class AnswerForm(forms.ModelForm):
@@ -40,5 +45,5 @@ class AnswerForm(forms.ModelForm):
         fields = ['body']
         
     def __init__(self, *args, **kwargs):
-        super(models.Answer, self).__init__(*args, **kwargs)
-        self.visible_fields()[0].field.widget.attrs['class'] = "form-control w-75 h-25"
+        super().__init__(*args, **kwargs)
+        self.fields.get('body').widget.attrs['class'] = "form-control"

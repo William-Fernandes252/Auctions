@@ -3,28 +3,46 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <h2 class="display-4 mb-4 ms-3">{{ title }}</h2>
-
     <div class="container-fluid">
-        {% for listing in listings %}
         <div class="row">
-            <div class="col-md border mb-3 mx-auto px-3 row rounded">
-                <div class="col-md mx-auto text-center">
-                    <a href="{% url 'listing' listing.id %}" target="_blank">
-                        <img class="img-fluid listing-img" src="{{ listing.image }}" alt="{{listing.title}}">
+            <aside class="sidebar sidebar-fixed pe-3 bg-light">
+                <h3 class="mt-3">Latest Bids</h3>
+                <hr class="mt-0">
+                <div class="list-group list-group-flush">
+                    {% for bid in latest_bids %}
+                    <a href="{% url 'listing' bid.listing.id %}" class="list-group-item list-group-item-action mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ bid.listing.title }}</h5>
+                            <small></small>
+                        </div>
+                        <p class="mb-1">${{ bid.value }} by {{ bid.user.username }}</p>
+                        <small>On {{ bid.creation_time }}</small>
                     </a>
+                    {% endfor %}
                 </div>
-                <div class="col-md my-auto my-auto">
-                    <h2>{{ listing.title }}</h2>
-                    <p><span class="price">${{ listing.initial_price }}</span></p>
-                    <p class="text-muted">Created {{ listing.creation_time }}</p>
+            </aside>
+            <main class="main col bg-white px-4">
+                <h2 class="display-4 my-4 ms-3">{{ title }}</h2>
+                <div class="row row-cols-lg-3 row-cols-sm-2 g-4">
+                    {% for listing in page_obj %}
+                    <div class="col">
+                        <div class="card">
+                            {% if listing.image %}
+                            <img class="img-fluid card-img-top" src="{{ listing.image.url }}" alt="{{ listing.title }}">
+                            {% else %}
+                            <img class="img-fluid card-img-top" src="{{ default_listing_img }}" alt="{{ listing.title }}">
+                            {% endif %}
+                            <div class="card-body">
+                                <h3 class="card-title text-truncate">{{ listing.title }}</h3>
+                                <p class="mb-1"><span class="price">${{ listing.initial_price }}</span></p>
+                                <p class="text-muted text-truncate mb-0">Created on {{ listing.creation_time }}</p>
+                            </div>
+                            <a href="{% url 'listing' listing.id %}" target="_blank" class="stretched-link"></a>
+                        </div>
+                    </div>                    
+                    {% endfor %}
                 </div>
-            </div>
+            </main>
         </div>
-        {% empty %}
-        <div class="mt-3"><span><strong>No Active Auctions</strong></span></div>
-        {% endfor %}
     </div>
-
-    
 {% endblock %}

@@ -8,10 +8,10 @@
 		{% include 'partials/_script.html' %}
 	</head>
 
-	<body>
+	<body class="bg-light">
 		{% include 'partials/_nav.html' %}
-		<div class="menu-spacing"></div>
 		{% include 'partials/_messages.html' %}
 		{% block content %}{% endblock content %}
+		{% include 'partials/_footer.html' %}
 	</body>
 </html>
