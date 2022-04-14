@@ -9,17 +9,17 @@ jobs:
     - name: Run unit tests
       run: |
         touch .env
-        echo DEBUG=${{ secrets.DEBUG}} > .env
-        echo SECRET_KEY=${{ secrets.SECRET_KEY }} > .env
-        echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} > .env
-        echo DB_ENGINE=${{ secrets.DB_ENGINE }} > .env
-        echo DB_NAME=${{ secrets.DB_NAME }} > .env
-        echo DB_USER=${{ secrets.DB_USER }} > .env
-        echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} > .env
-        echo DB_HOST=${{ secrets.DB_HOST }} > .env
-        echo DB_PORT=${{ secrets.DB_PORT }} > .env
-        echo BROKER_URL=${{ secrets.BROKER_URL }} > .env
-        echo CELERY_RESULT_BACKEND=${{ secrets.CELERY_RESULT_BACKEND }} > .env
+        echo DEBUG=${{ secrets.DEBUG}} >> .env
+        echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+        echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
+        echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
+        echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+        echo DB_USER=${{ secrets.DB_USER }} >> .env
+        echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
+        echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+        echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+        echo BROKER_URL=${{ secrets.BROKER_URL }} >> .env
+        echo CELERY_RESULT_BACKEND=${{ secrets.CELERY_RESULT_BACKEND }} >> .env
         pip3 install -r requirements.txt
         pip3 install --user django
         python3 manage.py test
