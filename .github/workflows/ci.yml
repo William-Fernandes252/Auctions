@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Create env file
+    - name: Run unit tests
       run: |
         touch .env
         echo DEBUG=${{ secrets.DEBUG}} > .env
@@ -20,9 +20,6 @@ jobs:
         echo DB_PORT=${{ secrets.DB_PORT }} > .env
         echo BROKER_URL=${{ secrets.BROKER_URL }} > .env
         echo CELERY_RESULT_BACKEND=${{ secrets.CELERY_RESULT_BACKEND }} > .env
-    - uses: actions/checkout@v2
-    - name: Run unit tests
-      run: |
         pip3 install -r requirements.txt
         pip3 install --user django
         python3 manage.py test
