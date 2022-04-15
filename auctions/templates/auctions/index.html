@@ -28,7 +28,7 @@
                     <div class="col">
                         <div class="card">
                             {% if listing.image %}
-                            <img class="img-fluid card-img-top" src="{{ listing.image.url }}" alt="{{ listing.title }}">
+                            <img class="img-fluid card-img-top listing-img" src="{{ listing.image.url }}" alt="{{ listing.title }}">
                             {% else %}
                             <img class="img-fluid card-img-top" src="{{ default_listing_img }}" alt="{{ listing.title }}">
                             {% endif %}

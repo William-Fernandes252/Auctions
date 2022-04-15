@@ -88,7 +88,7 @@ class Listing(models.Model):
         and not self.winner:
             self.winner = current_bid.user
         elif not 'test' in sys.argv:
-            tasks.set_listing_winner_task.apply_async(self.id, eta=self.end_time)
+            tasks.set_listing_winner_task.apply_async((self.pk,), eta=self.end_time)
         super().save(*args, **kwargs)
         
     def is_finished(self):

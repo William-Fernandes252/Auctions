@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import (
     decorators as auth_decorators, 
     mixins as auth_mixins)
-from django import http, shortcuts, urls
+from django import http, urls
 from django.utils import timezone
 from . import forms, models
 from django.views import generic
