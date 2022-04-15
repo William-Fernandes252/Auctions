@@ -15,20 +15,20 @@ class ListingListView(generic.ListView):
     paginate_by = 10
     watchlist = False
 
-    def get_queryset(self, **kwargs):
+    def get_queryset(self):
         queryset = super().get_queryset()
-        if category := kwargs.get('category'):
-            queryset = queryset.from_category(category)
+        if category := self.kwargs.get('category'):
+            queryset = queryset.from_category(category=category)
         elif self.watchlist:
             queryset = self.request.user.watchlist.active()
         elif q := self.request.GET.get('q'):
             queryset = queryset.search(query=q)
         return queryset
             
-    def get_context_data(self, **kwargs):
+    def get_context_data(self):
         context = super().get_context_data()
         context['title'] = "Active Listings"
-        if category := kwargs.get('category'):
+        if category := self.kwargs.get('category'):
             context['title'] = f"{category.title()}"
         elif self.watchlist:
             context['title'] = f"Watchlist"
