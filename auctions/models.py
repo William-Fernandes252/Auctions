@@ -7,6 +7,10 @@ from imagekit import (
 )
 from authentication import models as auth_models
 from . import managers
+from . import tasks
+from django import urls
+
+import sys
 
 
 class Category(models.Model):
@@ -45,29 +49,46 @@ class Listing(models.Model):
         blank=True, 
         upload_to='auctions/%Y/%m/%d', 
         processors=[
-            ImagekitProcessors.ResizeToFill(500, 500)
+            ImagekitProcessors.ResizeToFill(600, 600)
         ],
         format='JPEG',
         options={'quality': 100}
     )
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category')
-    watchers = models.ManyToManyField(auth_models.User, blank=True, related_name="watchlist")
+    category = models.ForeignKey(
+        Category, 
+        on_delete=models.CASCADE, 
+        related_name='category'
+    )
+    watchers = models.ManyToManyField(
+        auth_models.User, 
+        blank=True, 
+        related_name="watchlist"
+    )
     creation_time = models.DateTimeField()
     end_time = models.DateTimeField()
     duration = models.IntegerField(choices=DURATIONS)
     ended_manually = models.BooleanField(default=False)
     public = models.BooleanField(default=True)
-    winner = models.ForeignKey(auth_models.User, blank=True, related_name="wins", on_delete=models.SET_NULL, null=True)
+    winner = models.ForeignKey(
+        auth_models.User, 
+        blank=True, 
+        related_name="wins", 
+        on_delete=models.SET_NULL, 
+        null=True
+    )
 
     class Meta:
-        ordering = ('creation_time',) 
+        ordering = ('creation_time',)
         
-    def __str__(self):
-        return f"{self.title} ({self.author.username})"
-    
     def save(self, *args, **kwargs):
         self.creation_time = timezone.now()
         self.end_time = self.creation_time + timezone.timedelta(days=self.duration)
+        if self.ended_manually \
+        and (current_bid := self.bids.all().first()) \
+        and not self.winner:
+            self.winner = current_bid.user
+        elif not 'test' in sys.argv:
+            tasks.set_listing_winner_task.apply_async(self.id, eta=self.end_time)
         super().save(*args, **kwargs)
         
     def is_finished(self):
@@ -75,6 +96,12 @@ class Listing(models.Model):
     
     def is_valid_listing(self):
         return self.duration > 0 and self.end_time != self.creation_time and self.initial_price > 0.00
+    
+    def get_absolute_url(self):
+        return urls.reverse('listing', kwargs={"pk": self.pk})
+    
+    def __str__(self):
+        return f"{self.title} ({self.author.username})"
 
 
 class Bid(models.Model):

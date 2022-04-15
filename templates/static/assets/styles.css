@@ -24,6 +24,43 @@ img.listing-img {
     font-size: 1.2em;
 }
 
+.pagination>li>a {
+    background-color: rgb(33, 37, 41);
+    color: var(--primary-color);
+}
+
+.pagination>li>a:active {
+    box-shadow: 0 0 0.75em var(--primary-color);
+}
+
+.pagination>li>a:focus,
+.pagination>li>a:hover,
+.pagination>li>span:focus,
+.pagination>li>span:hover {
+    color: #5a5a5a;
+    background-color: var(--primary-color);
+    border-color: black;
+}
+
+.pagination>.active>a {
+    color: #5a5a5a !Important;
+    background-color: var(--primary-color) !Important;
+    border: solid 1px black !Important;
+}
+
+.pagination>.active>a:hover {
+    background-color: var(--primary-color) !Important;
+    border: solid 1px var(--primary-color);
+}
+
+.card {
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !Important;
+}
+
 @media (min-width: 910px) {
     .sidebar.sidebar-fixed {
         width: 275px;

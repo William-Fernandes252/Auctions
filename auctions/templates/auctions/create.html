@@ -3,7 +3,7 @@
 {% block title %}Create Listing{% endblock %}
 
 {% block content %}
-    <div class="container border bg-white my-2 pb-2">
+    <div class="container border bg-white my-2 pb-2 rounded">
         <form action="{% url 'create' %}" method="post">
             {% csrf_token %}
             <div class="row">

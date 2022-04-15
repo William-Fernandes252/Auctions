@@ -3,18 +3,18 @@
 {% block title %}{{ listing.title }}{% endblock %}
 
 {% block content %}
-    <main class="mb-3 mt-3 border bg-white mx-lg-5">
-        <section class="conteiner">
+    <main class="border rounded bg-white my-md-3 my-sm-0 mx-lg-5 mx-md-3 mx-sm-0">
+        <section class="conteiner m-lg-0 m-3">
             <div class="row">
-                <div class="col-5 m-3">
+                <div class="col-lg-5 col-auto m-lg-3">
                     {% if listing.image %}
                     <img class="img-fluid" src={{ listing.image.url }} alt="{{ listing.title }}">
                     {% else %}
                     <img class="img-fluid" src={{ default_listing_img }} alt="{{ listing.title }}">                    
                     {% endif %}
                 </div>
-                <div class="col-6 m-3">
-                    <h2 class="display-5">{{ listing.title }}</h2>
+                <div class="col-lg-6 col-auto m-lg-3">
+                    <h2 class="display-5 mt-lg-0 mt-2">{{ listing.title }}</h2>
                     <hr>
                     <dl class="vstack gap-1">
                         <dt class="fs-4">Description</dt>
@@ -23,28 +23,25 @@
                         <dt class="fs-4">Time remaining</dt>
                         <dd class="fs-4">{{ days }}d:{{ hours }}h:{{ minutes}}m</li>
                         {% endif %}
+                        {% if highest_bid %}
+                        <dt class="fs-4">Highest Bid</dt>
+                        <dd class="display-5">${{ highest_bid.value }}</dd>
+                        {% else %}
                         <dt class="fs-4">Initial Price</dt>
                         <dd class="display-5">${{ listing.initial_price }}</dd>
+                        {% endif %}
                         <dt class="fs-4">Status</dt>
                         <dd class="fs-5">
                         {% if finished %}
                             This Auctions is finished.
                         {% else %}
                             {{ listing.bids.count }} bid(s) so far.
-                            {% if current_bid %} Your bid is the current bid.{% endif %}
+                            {% if is_usr_curr_bid %} Your bid is the current bid.{% endif %}
                         {% endif %}
                         </dd>
-                        {% if listing.bids.count %}
-                        <dt class="fs-4">Highest Bid</dt>
-                        {% if highest_bid %}
-                        <dd>
-                            <span class="fw-bold highest-bid">${{ highest_bid }}</span>
-                        </dd>
-                        {% endif %}
                     </dl>
-                    {% endif %}
                     <div class="row">
-                        <form class="form-floating col-auto" action="{% url 'bid' listing.id %}" method="post" id="listing_form">
+                        <form class="form-floating col-auto mb-3" action="{% url 'bid' listing.id %}" method="post" id="listing_form">
                             {% csrf_token %}
                             <div class="input-group">
                                 {{ bid_form.value }}
@@ -62,7 +59,7 @@
                             <button type="submit" class="btn btn-primary">Watch <i class="bi bi-check2"></i></button>
                             {% endif %}
                         </form>
-                        {% if author %}
+                        {% if is_author %}
                         <form action="{% url 'close' listing.id %}" class="col-auto">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">Close Auction <i class="bi bi-x-octagon-fill"></i></button>
@@ -92,7 +89,7 @@
                         Add a question <i class="bi bi-chat-dots-fill"></i>
                     </label>           
                     {{ question_form.body }}
-                    <button class="btn btn-info mt-2" type="submit" name="question_submit" id="question-btn">
+                    <button class="btn btn-info mt-3" type="submit" name="question_submit" id="question-btn">
                         Publish Question
                     </button>
                 </form>

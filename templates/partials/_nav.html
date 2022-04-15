@@ -8,7 +8,7 @@
         <div class="collapse navbar-collapse align-middle" id="navbar">
             <ul class="navbar-nav me-auto align-items-center">
                 <li class="nav-item">
-                    <form class="form-inline" action="{% url 'search' %}" method="get" id="search-form">
+                    <form class="form-inline" action="{% url 'index' %}" method="get" id="search-form">
                         <div class="input-group">
                             <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="q" aria-describedby="search-btn">
                             <button class="btn btn-secondary" type="submit" form="search-form" id="search-btn">
@@ -49,9 +49,9 @@
             <ul class="navbar-nav align-items-center">
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link disabled text-light fs-5" href="">
-                        <i class="bi bi-person-circle"></i> 
-                        Sined in as <strong>{{ user }}</strong>
+                    <a class="nav-link disabled text-secondary fs-5" href="">
+                        <i class="bi bi-person-circle" style="color: var(--primary-color)"></i> 
+                        Sined in as <strong style="color: var(--primary-color)">{{ user }}</strong>
                     </a>
                 </li>
                 <li class="nav-item">
