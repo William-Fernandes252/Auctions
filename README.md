@@ -30,9 +30,6 @@ Also, during this project I could learn about
 
 In order to install and run it, follow the steps given bellow.
 
-## Requirements
-- [Docker and Docker Compose](https://docs.docker.com/desktop/).
-
 ## Installing and running
 - Clone this repository with `https://github.com/William-Fernandes252/Auctions.git`;
 - Install the dependencies for this project with `pip install -r requirements.txt`;
