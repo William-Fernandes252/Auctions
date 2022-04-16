@@ -9,18 +9,18 @@ jobs:
     - name: Run unit tests
       run: |
         mkdir .env
-        touch ./.env/web_env
-        echo DEBUG=${{ secrets.DEBUG }} >> ./.env/web_env
-        echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> ./.env/web_env
-        echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> ./.env/web_env
-        echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> ./.env/web_env
-        echo DB_NAME=${{ secrets.DB_NAME }} >> ./.env/web_env
-        echo DB_USER=${{ secrets.DB_USER }} >> ./.env/web_env
-        echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> ./.env/web_env
-        echo DB_HOST=${{ secrets.DB_HOST }} >> ./.env/web_env
-        echo DB_PORT=${{ secrets.DB_PORT }} >> ./.env/web_env
-        echo BROKER_URL=${{ secrets.BROKER_URL }} >> ./.env/web_env
-        echo CELERY_RESULT_BACKEND=${{ secrets.CELERY_RESULT_BACKEND }} >> ./.env/web_env
+        touch ./.env/.app_env
+        echo DEBUG=${{ secrets.DEBUG }} >> ./.env/.app_env
+        echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> ./.env/.app_env
+        echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> ./.env/.app_env
+        echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> ./.env/.app_env
+        echo DB_NAME=${{ secrets.DB_NAME }} >> ./.env/.app_env
+        echo DB_USER=${{ secrets.DB_USER }} >> ./.env/.app_env
+        echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> ./.env/.app_env
+        echo DB_HOST=${{ secrets.DB_HOST }} >> ./.env/.app_env
+        echo DB_PORT=${{ secrets.DB_PORT }} >> ./.env/.app_env
+        echo BROKER_URL=${{ secrets.BROKER_URL }} >> ./.env/.app_env
+        echo CELERY_RESULT_BACKEND=${{ secrets.CELERY_RESULT_BACKEND }} >> ./.env/.app_env
         pip3 install -r requirements.txt
         pip3 install --user django
         python3 manage.py test

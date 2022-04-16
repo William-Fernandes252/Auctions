@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Load environment variables
-dotenv.load_dotenv(dotenv_path=BASE_DIR / '.env' / '.web_env')
+dotenv.load_dotenv(dotenv_path=BASE_DIR / '.env' / '.app_env')
 
 
 # Quick-start development settings - unsuitable for production
