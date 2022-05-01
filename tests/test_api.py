@@ -266,7 +266,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             {'body': 'Yes.'},
             format='json' 
         )
-        request.user = self.user
+        request.user = self.anonymous
         response = views.answer_question_view(request, listing_pk=2, question_pk=4)
         self.assertEqual(response.status_code, 403)
         
@@ -469,7 +469,7 @@ class AutheticatedRequestsTestCase(SetUp):
         
     def test_unauthorized_answer_post(self):
         """Test answer post by an unauthorized user 
-        (that is not the author of the listing) 
+        (i.e., a user that is not the author of the listing) 
         """
         request = self.factory.post(
             API_BASE_URL + \
@@ -560,6 +560,18 @@ class AutheticatedRequestsTestCase(SetUp):
         request.user = self.user
         response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 200)
+        
+        
+    def test_unauthorized_edit_listing_view(self):
+        """Test unauthorized edit listing endpoint request (i.e., a user trying to edit a listing of another user)
+        """
+        request = self.factory.put(
+            API_BASE_URL + 'user/listings/<int:pk>/',
+            {'public': False},
+        )
+        request.user = auth_models.User.objects.get(username='user2')
+        response = views.user_listing_details_view(request, pk=4)
+        self.assertEqual(response.status_code, 404)
         
         
     def test_watchlist_data(self):

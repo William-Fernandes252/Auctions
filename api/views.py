@@ -1,9 +1,9 @@
 from django.http import HttpResponseRedirect
 from django import urls
 from rest_framework.response import Response
-from rest_framework import generics, views
+from rest_framework import generics, views, viewsets
 from auctions import models
-from . import serializers
+from . import serializers, permissions as api_permissions
 from rest_framework import permissions, exceptions
 from authentication import classes
 from . import mixins
@@ -126,15 +126,8 @@ user_bid_list_view = UserBidsAPIView.as_view()
 
 class EditListingAPIView(mixins.UserListingsQuerysetMixin, generics.RetrieveUpdateAPIView):
     serializer_class = serializers.ListingEditSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, api_permissions.IsOwner)
     lookup_field ='pk'
-    
-    def update(self, request, *args, **kwargs):
-        if self.get_object().author != request.user:
-            raise exceptions.PermissionDenied(
-                {"denied": "Only the author of a listing is allowed to edit it."}
-            )
-        return super(EditListingAPIView, self).update(request, *args, **kwargs)
     
 user_listing_details_view = EditListingAPIView.as_view()
 
@@ -158,7 +151,7 @@ watch_listing = WatchListingAPIView.as_view()
 class AnswerQuestionAPIView(generics.GenericAPIView):
     serializer_class = serializers.AnswerCreationSerializer
     authentication_classes = (classes.CsrfExemptSessionAuthentication,)
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, api_permissions.IsOwner)
     
     def post(self, request, **kwargs):
         listing = generics.get_object_or_404(
@@ -184,3 +177,7 @@ class AnswerQuestionAPIView(generics.GenericAPIView):
         return Response(serializer.data, status=201)
     
 answer_question_view = AnswerQuestionAPIView.as_view()
+
+
+class ListingViewSet(viewsets.ModelViewSet):
+    pass
