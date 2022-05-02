@@ -19,7 +19,7 @@ class BidAbstractSerializer(serializers.ModelSerializer):
         
 class ListingAbstractSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name='listing-details',
+        view_name='listing-detail',
         lookup_field='pk',
         read_only=True
     )
@@ -55,7 +55,7 @@ class ListingListSerializer(
     serializers.ModelSerializer):
     
     url = serializers.HyperlinkedIdentityField(
-        view_name='listing-details',
+        view_name='listing-detail',
         lookup_field='pk',
     )
     current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
@@ -80,7 +80,7 @@ class ListingDetailsSerializer(
     category = serializers.SerializerMethodField(read_only=True)
     current_bid = BidAbstractSerializer(source='bids.first')
     all_bids = serializers.HyperlinkedIdentityField(
-        view_name = 'listing-bid-list',
+        view_name = 'listing-bids-list',
         lookup_field = 'pk'
     )
     

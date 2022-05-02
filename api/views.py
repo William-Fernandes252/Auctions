@@ -1,19 +1,12 @@
 from django.http import HttpResponseRedirect
 from django import urls
 from rest_framework.response import Response
-from rest_framework import generics, views, viewsets
+from rest_framework import generics, views, viewsets, mixins
 from auctions import models
 from . import serializers, permissions as api_permissions
 from rest_framework import permissions, exceptions
 from authentication import classes
-from . import mixins
-
-
-class HomeAPIView(views.APIView):
-    def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect(urls.reverse('listing-list'))
-    
-api_home_view = HomeAPIView.as_view()
+from . import mixins as api_mixins
     
 
 class UserHomeAPIView(views.APIView):
@@ -23,14 +16,13 @@ class UserHomeAPIView(views.APIView):
 user_home_api_view = UserHomeAPIView.as_view()
 
 
-class ListingListAPIView(mixins.ListingQuerysetMixin, generics.ListAPIView):
+class ListingListAPIView(api_mixins.ListingQuerysetMixin, generics.ListAPIView):
     serializer_class = serializers.ListingAbstractSerializer
-    permission_classes = (permissions.AllowAny,)
     
 listing_list_view = ListingListAPIView.as_view()
 
 
-class ListingDetailsAPIView(mixins.ListingQuerysetMixin, generics.RetrieveAPIView):
+class ListingDetailsAPIView(api_mixins.ListingQuerysetMixin, generics.RetrieveAPIView):
     serializer_class = serializers.ListingDetailsSerializer
     lookup_field = 'pk'
     pagination_class = None
@@ -105,7 +97,7 @@ class WatchlistAPIView(generics.ListAPIView):
 user_watchlist_api_view = WatchlistAPIView.as_view()
 
 
-class UserListingsAPIView(mixins.UserListingsQuerysetMixin, generics.ListAPIView):
+class UserListingsAPIView(api_mixins.UserListingsQuerysetMixin, generics.ListAPIView):
     serializer_class = serializers.ListingListSerializer
     permission_classes = (permissions.IsAuthenticated,)
     
@@ -124,7 +116,7 @@ class UserBidsAPIView(generics.ListAPIView):
 user_bid_list_view = UserBidsAPIView.as_view()
 
 
-class EditListingAPIView(mixins.UserListingsQuerysetMixin, generics.RetrieveUpdateAPIView):
+class EditListingAPIView(api_mixins.UserListingsQuerysetMixin, generics.RetrieveUpdateAPIView):
     serializer_class = serializers.ListingEditSerializer
     permission_classes = (permissions.IsAuthenticated, api_permissions.IsOwner)
     lookup_field ='pk'
@@ -177,7 +169,3 @@ class AnswerQuestionAPIView(generics.GenericAPIView):
         return Response(serializer.data, status=201)
     
 answer_question_view = AnswerQuestionAPIView.as_view()
-
-
-class ListingViewSet(viewsets.ModelViewSet):
-    pass

@@ -1,45 +1,19 @@
 from django.urls import path
-from . import views
+from . import views, viewsets
+from rest_framework import routers
 
+
+router = routers.DefaultRouter()
+router.register(r'listings', viewsets.ListingViewSet)
 
 urlpatterns = [
-    path(
-        "", 
-        views.api_home_view, 
-        name="home"
-    ),
-    path(
-        "listings/", 
-        views.listing_list_view, 
-        name="listing-list"
-    ),
-    path(
-        "listings/create/", 
-        views.listing_create_view, 
-        name="listing-create"
-    ),
-    path(
-        "listings/<int:pk>/", 
-        views.listing_details_view, 
-        name="listing-details"
-    ),
     path(
         "bids/", 
         views.bid_list_view, 
         name="bid-list"
     ),
     path(
-        "listings/<int:pk>/bids/", 
-        views.listing_bid_list_view, 
-        name="listing-bid-list"
-    ),
-    path(
-        "listings/<int:pk>/questions/", 
-        views.listing_question_list_view, 
-        name="listing-question-list"    
-    ),
-    path(
-        "listings/<int:listing_pk>/questions/<int:question_pk>/answer/", 
+        "listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/", 
         views.answer_question_view, 
         name="answer-question"
     ),
@@ -73,4 +47,4 @@ urlpatterns = [
         views.user_listing_details_view, 
         name="user-listing-details"
     ),
-]
+] + router.urls

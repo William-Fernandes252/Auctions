@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 from django.contrib.auth.models import AnonymousUser
-from api import views
+from api import views, viewsets
 from auctions import models
 from authentication import models as auth_models
 
@@ -142,7 +142,7 @@ class AuctionsAPITestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listings/')
         request.user = self.anonymous
-        response = views.listing_list_view(request)
+        response = viewsets.listing_list_view(request)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -156,7 +156,7 @@ class AuctionsAPITestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listings/')
         request.user = self.anonymous
-        response = views.listing_list_view(request)
+        response = viewsets.listing_list_view(request)
         
         result = response.data.get('results')[0]
         title = result.get('title')
@@ -175,7 +175,7 @@ class AuctionsAPITestCase(SetUp):
             {'q': '2', 'category': 'vehicles'}
         )
         request.user = self.anonymous
-        response = views.listing_list_view(request)
+        response = viewsets.listing_list_view(request)
         
         data = response.data
         self.assertEqual(data.get('count'), 1)
@@ -194,7 +194,7 @@ class AuctionsAPITestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listings/<int:pk>/')
         request.user = self.anonymous
-        response = views.listing_details_view(request, pk=1)
+        response = viewsets.listing_detail_view(request, pk=1)
         self.assertEqual(response.status_code, 200)
         
         listing_data = response.data
@@ -214,22 +214,13 @@ class UnauthorizedRequestsTestCase(SetUp):
         request.user = self.anonymous
         response = views.bid_list_view(request)
         self.assertEqual(response.status_code, 403)
-        
-        
-    def test_unauthenticated_bid_post(self):
-        """Test bid posting with request without authentication
-        """
-        request = self.factory.post(API_BASE_URL + '/listing/<int:pk>/bids/', {'value': '15000.00'})
-        request.user = self.anonymous
-        response = views.bid_list_view(request, pk=2)
-        self.assertEqual(response.status_code, 403)
     
     
     def test_unauthenticated_listing_creation(self):
         """Test listing creation with unauthenticated user
         """
         request = self.factory.post(
-            API_BASE_URL + '/listing/create/', 
+            API_BASE_URL + '/listings/create/', 
             {
                 'title': 'new_listing',
                 'initial_price': 200,
@@ -240,7 +231,20 @@ class UnauthorizedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.anonymous
-        response = views.listing_create_view(request)
+        response = viewsets.listing_create_view(request)
+        self.assertEqual(response.status_code, 403)
+        
+        
+    def test_unauthenticated_bid_post(self):
+        """Test bid posting with unauthenticated user
+        """
+        request = self.factory.post(
+            API_BASE_URL + '/listings/<int:pk>/bids_create/', 
+            {'value': '15000.00'},
+            format='json'
+        )
+        request.user = self.anonymous
+        response = viewsets.listing_bid_create_view(request, pk=2)
         self.assertEqual(response.status_code, 403)
         
         
@@ -248,12 +252,12 @@ class UnauthorizedRequestsTestCase(SetUp):
         """Test question post from unauthenticated request
         """
         request = self.factory.post(
-            API_BASE_URL + 'listings/<int:pk>/questions/',
+            API_BASE_URL + 'listings/<int:pk>/questions_create/',
             {'body': 'Can I make a question?'},
             format='json' 
         )
         request.user = self.anonymous
-        response = views.listing_question_list_view(request, pk=3)
+        response = viewsets.listing_question_list_view(request, pk=3)
         self.assertEqual(response.status_code, 403)
     
 
@@ -262,7 +266,7 @@ class UnauthorizedRequestsTestCase(SetUp):
         """
         request = self.factory.post(
             API_BASE_URL + \
-            'listings/<int:listing_pk>/questions/<int:question_pk>/answer/',
+            'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
             {'body': 'Yes.'},
             format='json' 
         )
@@ -355,9 +359,9 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_listing_bid_list_view(self):
         """Test bid data from the listing bids list view
         """
-        request = self.factory.get(API_BASE_URL + '/listing/<int:pk>/bids/')
+        request = self.factory.get(API_BASE_URL + '/listings/<int:pk>/bids_list/')
         request.user = self.user
-        response = views.listing_bid_list_view(request, pk=2)
+        response = viewsets.listing_bid_list_view(request, pk=2)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -370,12 +374,12 @@ class AutheticatedRequestsTestCase(SetUp):
         """Test bid posting with authenticated user
         """
         request = self.factory.post(
-            API_BASE_URL + '/listing/<int:pk>/bids/', 
+            API_BASE_URL + '/listings/<int:pk>/bids_create/', 
             {'value': '15000.00'},
             format='json'
         )
         request.user = self.user
-        response = views.listing_bid_list_view(request, pk=2)
+        response = viewsets.listing_bid_create_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
         
         
@@ -383,7 +387,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """Test listing creation with invalid duration
         """
         request = self.factory.post(
-            API_BASE_URL + '/listing/create/', 
+            API_BASE_URL + '/listings/create/', 
             {
                 'title': 'new_listing',
                 'initial_price': 200,
@@ -394,7 +398,7 @@ class AutheticatedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.user
-        response = views.listing_create_view(request)
+        response = viewsets.listing_create_view(request)
         self.assertEqual(response.status_code, 400)
         
         
@@ -402,7 +406,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """Test listing creation with invalid category
         """
         request = self.factory.post(
-            API_BASE_URL + '/listing/create/', 
+            API_BASE_URL + '/listings/create/', 
             {
                 'title': 'new_listing',
                 'initial_price': 200,
@@ -413,7 +417,7 @@ class AutheticatedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.user
-        response = views.listing_create_view(request)
+        response = viewsets.listing_create_view(request)
         self.assertEqual(response.status_code, 400)
         
         
@@ -421,7 +425,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """Test listing creation with valid data and authenticated user
         """
         request = self.factory.post(
-            API_BASE_URL + '/listing/create/', 
+            API_BASE_URL + '/listings/create/', 
             {
                 'title': 'new_listing',
                 'description': 'This listing is valid.',
@@ -433,16 +437,16 @@ class AutheticatedRequestsTestCase(SetUp):
             form='json',
         )
         request.user = self.user
-        response = views.listing_create_view(request)
+        response = viewsets.listing_create_view(request)
         self.assertEqual(response.status_code, 201)
         
     
     def test_listing_questions_list_view(self):
         """Test questions data from the listing questions list view
         """
-        request = self.factory.get(API_BASE_URL + 'listings/<int:pk>/questions/')
+        request = self.factory.get(API_BASE_URL + 'listings/<int:pk>/questions_list/')
         request.user = self.anonymous
-        response = views.listing_question_list_view(request, pk=3)
+        response = viewsets.listing_question_list_view(request, pk=3)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -458,12 +462,12 @@ class AutheticatedRequestsTestCase(SetUp):
         """Test question post from authenticated request
         """
         request = self.factory.post(
-            API_BASE_URL + 'listings/<int:pk>/questions/',
+            API_BASE_URL + 'listings/<int:pk>/questions_create/',
             {'body': 'Can I make a question?'},
             format='json' 
         )
         request.user = self.user
-        response = views.listing_question_list_view(request, pk=2)
+        response = viewsets.listing_question_create_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
         
         
@@ -473,7 +477,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.post(
             API_BASE_URL + \
-            'listings/<int:listing_pk>/questions/<int:question_pk>/answer/',
+            'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
             {'body': 'Yes.'},
             format='json' 
         )
@@ -487,7 +491,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.post(
             API_BASE_URL + \
-            'listings/<int:listing_pk>/questions/<int:question_pk>/answer/',
+            'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
             {'body': 'Yes.'},
             format='json'
         )
