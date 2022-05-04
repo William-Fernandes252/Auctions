@@ -1,12 +1,12 @@
 from django.test import TestCase
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, APIClient
 from django.contrib.auth.models import AnonymousUser
 from api import views, viewsets
 from auctions import models
 from authentication import models as auth_models
 
 
-API_BASE_URL = "/auctions/api/"
+API_BASE_URL = "/auctions/api"
 
 
 class SetUp(TestCase):
@@ -14,15 +14,17 @@ class SetUp(TestCase):
      def setUp(self):
         """Setup for test the auctions API endpoints
         """
-        # Set the request factory, authenticated user and anonymous user
+        # Set the request factory, HTTP client, authenticated user and anonymous user
         self.factory = APIRequestFactory(enforce_csrf_checks=False)
+        self.client = APIClient(enforce_csrf_checks=False)
         self.user = auth_models.User.objects.create(
-            username='tester', 
-            password='QWERTY!@#', 
+            username='tester',  
             email='tester.user@email.com',
             first_name='Tester',
             last_name='User',
         )
+        self.user.set_password('QWERTY!@#')
+        self.user.save()
         self.anonymous = AnonymousUser()
         
         # Set instances of the models
@@ -244,7 +246,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             format='json'
         )
         request.user = self.anonymous
-        response = viewsets.listing_bid_create_view(request, pk=2)
+        response = viewsets.listing_bids_view(request, pk=2)
         self.assertEqual(response.status_code, 403)
         
         
@@ -257,7 +259,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             format='json' 
         )
         request.user = self.anonymous
-        response = viewsets.listing_question_list_view(request, pk=3)
+        response = viewsets.listing_questions_view(request, pk=3)
         self.assertEqual(response.status_code, 403)
     
 
@@ -361,7 +363,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + '/listings/<int:pk>/bids_list/')
         request.user = self.user
-        response = viewsets.listing_bid_list_view(request, pk=2)
+        response = viewsets.listing_bids_view(request, pk=2)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -379,7 +381,7 @@ class AutheticatedRequestsTestCase(SetUp):
             format='json'
         )
         request.user = self.user
-        response = viewsets.listing_bid_create_view(request, pk=2)
+        response = viewsets.listing_bids_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
         
         
@@ -446,7 +448,7 @@ class AutheticatedRequestsTestCase(SetUp):
         """
         request = self.factory.get(API_BASE_URL + 'listings/<int:pk>/questions_list/')
         request.user = self.anonymous
-        response = viewsets.listing_question_list_view(request, pk=3)
+        response = viewsets.listing_questions_view(request, pk=3)
         self.assertEqual(response.status_code, 200)
         
         data = response.data
@@ -467,7 +469,7 @@ class AutheticatedRequestsTestCase(SetUp):
             format='json' 
         )
         request.user = self.user
-        response = viewsets.listing_question_create_view(request, pk=2)
+        response = viewsets.listing_questions_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
         
         
@@ -604,3 +606,26 @@ class AutheticatedRequestsTestCase(SetUp):
         request.user = self.user
         response = views.watch_listing(request)
         self.assertEqual(response.status_code, 200)
+        
+        
+class ViewSetsTestCase(SetUp):
+    
+    def test_bids_get_action(self):
+        """Test the bids action from the listings viewset with a get request
+        """
+        response = self.client.get(API_BASE_URL + '/listings/2/bids/')
+        self.assertEqual(response.status_code, 200)
+        
+    
+    def test_bids_post_action(self):
+        """Test the bids action from the listings viewset with a post request
+        """
+        if self.client.login(username='tester', password='QWERTY!@#'):
+            response = self.client.post(
+                API_BASE_URL + '/listings/2/bids/', 
+                {'value': '15000.00'},
+                format='json'
+            )
+            self.assertEqual(response.status_code, 201)
+        else:
+            raise AssertionError('Login failed')

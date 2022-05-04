@@ -18,17 +18,17 @@ class ListingViewSet(viewsets.GenericViewSet,
         'list': serializers.ListingAbstractSerializer,
         'retrieve': serializers.ListingDetailsSerializer,
         'create': serializers.ListingCreationSerializer,
-        'bids_list': serializers.BidAbstractSerializer,
-        'bids_create': serializers.BidAbstractSerializer,
-        'questions_list': serializers.QuestionSerializer,
-        'questions_create': serializers.QuestionSerializer,
+        'bids': serializers.BidAbstractSerializer,
+        'create_bid': serializers.BidAbstractSerializer,
+        'questions': serializers.QuestionSerializer,
+        'pub_question': serializers.QuestionSerializer,
     }
     
     
     def get_queryset(self):
-        if 'bids' in self.action:
+        if 'bid' in self.action:
             return models.Listing.objects.get(pk=self.kwargs.get('pk')).bids
-        elif 'questions' in self.action:
+        elif 'question' in self.action:
             return models.Listing.objects.get(pk=self.kwargs.get('pk')).questions
         
         queryset = super().get_queryset()
@@ -44,7 +44,8 @@ class ListingViewSet(viewsets.GenericViewSet,
     def get_serializer_class(self):
         """Instantiates and returns the serializer for the given action.
         """
-        return self.serializer_classes.get(self.action)
+        serializer = self.serializer_classes.get(self.action)
+        return serializer if serializer is not None else self.serializer_class
 
     
     def perform_create(self, serializer):
@@ -54,21 +55,17 @@ class ListingViewSet(viewsets.GenericViewSet,
     @decorators.action(
         detail=True,  
         methods=['get'],
-        name='Listing Bids List', 
         pagination_class = None,
+        name='Listing Bids',
     )
-    def bids_list(self, request, pk=None):
+    def bids(self, request, pk=None):
         serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
-    @decorators.action(
-        detail=True,
-        methods=['post'],
-        name='Post Bid',
-        permission_classes=[permissions.IsAuthenticated],
-    )
-    def bids_create(self, request, pk=None):        
+    @bids.mapping.post
+    @decorators.permission_classes([permissions.IsAuthenticated])
+    def create_bid(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(
@@ -81,21 +78,17 @@ class ListingViewSet(viewsets.GenericViewSet,
     @decorators.action(
         detail=True,
         methods=['get'],
-        name='Listing Questions List',
+        name='Listing Questions',
         pagination_class = None,
     )
-    def questions_list(self, request, pk=None):
+    def questions(self, request, pk=None):
         serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
-    @decorators.action(
-        detail=True,
-        methods=['post'],
-        name='Publish Question',
-        permission_classes=[permissions.IsAuthenticated],
-    )
-    def questions_create(self, request, pk=None):
+    @questions.mapping.post
+    @decorators.permission_classes([permissions.IsAuthenticated])
+    def pub_question(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(
@@ -119,12 +112,9 @@ class ListingViewSet(viewsets.GenericViewSet,
             watchlist.add(listing)
         return Response(status=status.HTTP_200_OK)
     
-    
-      
+
 listing_list_view = ListingViewSet.as_view({'get': 'list'})
 listing_detail_view = ListingViewSet.as_view({'get': 'retrieve'})
 listing_create_view = ListingViewSet.as_view({'post': 'create'})
-listing_bid_list_view = ListingViewSet.as_view({'get': 'bids_list'})
-listing_bid_create_view = ListingViewSet.as_view({'post': 'bids_create'})
-listing_question_list_view = ListingViewSet.as_view({'get': 'questions_list'})
-listing_question_create_view = ListingViewSet.as_view({'post': 'questions_create'})
+listing_bids_view = ListingViewSet.as_view({'get': 'bids', 'post': 'create_bid'})
+listing_questions_view = ListingViewSet.as_view({'get': 'questions', 'post': 'pub_question'})
