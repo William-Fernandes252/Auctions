@@ -6,13 +6,13 @@ AUTH_API_BASE_URL = "/auth/api"
 
 
 class AuthAPITestCase(test.TestCase):
-    
+
     def setUp(self):
         """Setup for test the authentication API endpoints
         """
         self.user = auth_models.User.objects.create(
-            username='tester', 
-            password='QWERTY!@#', 
+            username='tester',
+            password='QWERTY!@#',
             email='tester.user@email.com',
             first_name='Tester',
             last_name='User',
@@ -21,38 +21,34 @@ class AuthAPITestCase(test.TestCase):
         self.user.set_password('QWERTY!@#')
         self.user.save()
         self.client = test.Client()
-        
-    
+
     def test_login_with_valid_credentials(self):
         """Test login endpoint with valid credentials
         """
         response = self.client.post(
-            path=AUTH_API_BASE_URL + '/login/', 
+            path=AUTH_API_BASE_URL + '/login/',
             data={'username': 'tester', 'password': 'QWERTY!@#'},
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 200)
-        
-        
+
     def test_login_with_invalid_credentials(self):
         """Test login endpoint with invalid credentials
         """
         response = self.client.post(
-            path=AUTH_API_BASE_URL + '/login/', 
+            path=AUTH_API_BASE_URL + '/login/',
             data={'username': 'tester', 'password': 'qwerty123'},
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 400)
-        
-        
+
     def test_logout(self):
         """Test logout endpoint
         """
         self.client.force_login(self.user)
         response = self.client.get(path=AUTH_API_BASE_URL+'/logout/')
         self.assertEqual(response.status_code, 200)
-        
-        
+
     def test_registration_with_valid_credentials(self):
         """Test the registration endpoint with valid credentials
         """
@@ -69,8 +65,7 @@ class AuthAPITestCase(test.TestCase):
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 201)
-        
-        
+
     def test_registration_with_invalid_credentials(self):
         """Test the registration endpoint with invalid credentials
         """
@@ -87,8 +82,7 @@ class AuthAPITestCase(test.TestCase):
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 400)
-        
-        
+
     def test_registration_with_missing_fields(self):
         """Test the registration endpoint with missing fields.
         """
@@ -104,8 +98,7 @@ class AuthAPITestCase(test.TestCase):
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 400)
-        
-        
+
     def test_login_with_registered_user(self):
         """Test the login endpoint with user registered with register endpoint
         """
@@ -122,7 +115,7 @@ class AuthAPITestCase(test.TestCase):
             content_type='application/json',
         )
         login_response = self.client.post(
-            path=AUTH_API_BASE_URL + '/login/', 
+            path=AUTH_API_BASE_URL + '/login/',
             data={'username': 'william', 'password': 'QWERTY!@#'},
             content_type='application/json',
         )
