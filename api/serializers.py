@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from auctions.models import Listing, Bid, Question, Answer, Category
+from authentication.models import User
 from .mixins import ListingSerializerMixin
 from rest_framework.exceptions import ValidationError
 
@@ -188,3 +189,34 @@ class QuestionSerializer(serializers.ModelSerializer):
             'body',
             'answer',
         ]
+        
+        
+class DashboardSerializer(serializers.HyperlinkedModelSerializer):
+    listings_count = serializers.SerializerMethodField()
+    bids_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'listings_count',
+            'listings',
+            'bids_count',
+            'bids',
+            'wins',
+            'questions',
+            'watchlist',
+        ]
+        read_only_fields = '__all__'
+        extra_kwargs = {
+            'listings': {'view_name': 'dashboard-listings'},
+            'bids': {'view_name': 'dashboard-bids'},
+            'wins': {'view_name': 'dashboard-wins'},
+            'questions': {'view_name': 'dashboard-questions'},
+            'watchlist': {'view_name': 'dashboard-watchlist'},
+        }
+        
+    def get_listings_count(self, obj):
+        return obj.listings.count()
+    
+    def get_bids_count(self, obj):
+        return obj.bids.count()
