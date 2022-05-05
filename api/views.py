@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect
 from django import urls
 from rest_framework.response import Response
-from rest_framework import generics, views, viewsets, mixins
+from rest_framework import generics, views
 from auctions import models
 from . import serializers, permissions as api_permissions
 from rest_framework import permissions, exceptions
