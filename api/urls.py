@@ -5,22 +5,13 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'listings', viewsets.ListingViewSet)
+router.register(r'bids', viewsets.BidsViewSet)
 
 urlpatterns = [
     path(
-        "bids/", 
-        views.bid_list_view, 
-        name="bid-list"
-    ),
-    path(
-        "listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/", 
+        "listings/<int:listing_pk>/questions/<int:question_pk>/answer/", 
         views.answer_question_view, 
         name="answer-question"
-    ),
-    path(
-        "listings/watch/", 
-        views.watch_listing, 
-        name="watch-listing"
     ),
     path(
         "user/", 
