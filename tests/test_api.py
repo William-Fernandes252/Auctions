@@ -599,12 +599,11 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_watch_post(self):
         """Test an authenticated watch post to the watch listing endpoint
         """
-        request = self.factory.post(
+        self.client.login(username='tester', password='QWERTY!@#')
+        response = self.client.post(
             API_BASE_URL + '/listings/watch/',
             {'id': 3}
         )
-        request.user = self.user
-        response = views.watch_listing(request)
         self.assertEqual(response.status_code, 200)
         
         
