@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from auctions.models import Listing, Bid, Question, Answer, Category
-from authentication.models import User
-from .mixins import ListingSerializerMixin
 from rest_framework.exceptions import ValidationError
+from rest_framework_extensions import serializers as extended_serializers
+from auctions.models import Listing, Bid, Question, Answer
+from authentication.models import User
+from . import mixins
 
 
 class BidAbstractSerializer(serializers.ModelSerializer):
@@ -16,8 +17,8 @@ class BidAbstractSerializer(serializers.ModelSerializer):
             'user',
             'on',
         ]
-        
-        
+
+
 class ListingAbstractSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name='listing-detail',
@@ -25,7 +26,7 @@ class ListingAbstractSerializer(serializers.ModelSerializer):
         read_only=True
     )
     current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
-    
+
     class Meta:
         model = Listing
         fields = [
@@ -34,13 +35,13 @@ class ListingAbstractSerializer(serializers.ModelSerializer):
             'url',
             'end_time',
         ]
-        
-        
+
+
 class BidListSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='creation_time', read_only=True)
     user = serializers.CharField(source='user.get_full_name', read_only=True)
     listing = ListingAbstractSerializer(read_only=True)
-    
+
     class Meta:
         model = Bid
         fields = [
@@ -52,15 +53,15 @@ class BidListSerializer(serializers.ModelSerializer):
 
 
 class ListingListSerializer(
-    ListingSerializerMixin,
-    serializers.ModelSerializer):
-    
+        mixins.ListingSerializerMixin,
+        serializers.ModelSerializer):
+
     url = serializers.HyperlinkedIdentityField(
         view_name='listing-detail',
         lookup_field='pk',
     )
     current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
-    
+
     class Meta:
         model = Listing
         fields = [
@@ -74,17 +75,18 @@ class ListingListSerializer(
 
 
 class ListingDetailsSerializer(
-    ListingSerializerMixin,
-    serializers.ModelSerializer):
+        mixins.ListingSerializerMixin,
+        serializers.ModelSerializer):
 
-    author = serializers.CharField(source='author.get_full_name', read_only=True)
+    author = serializers.CharField(
+        source='author.get_full_name', read_only=True)
     category = serializers.SerializerMethodField(read_only=True)
     current_bid = BidAbstractSerializer(source='bids.first')
     all_bids = serializers.HyperlinkedIdentityField(
-        view_name = 'listing-bids',
-        lookup_field = 'pk'
+        view_name='listing-bids',
+        lookup_field='pk'
     )
-    
+
     class Meta:
         model = Listing
         fields = [
@@ -100,10 +102,10 @@ class ListingDetailsSerializer(
             'end_time',
             'public',
         ]
-        
-        
+
+
 class ListingCreationSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = Listing
         fields = [
@@ -114,16 +116,17 @@ class ListingCreationSerializer(serializers.ModelSerializer):
             'duration',
             'public',
         ]
-        
-        
+
+
 class ListingEditSerializer(
-    serializers.ModelSerializer,
-    ListingSerializerMixin):
-    
+        extended_serializers.PartialUpdateSerializerMixin,
+        serializers.ModelSerializer,
+        mixins.ListingSerializerMixin):
+
     category = serializers.SerializerMethodField(read_only=True)
     ended = serializers.BooleanField(source='ended_manually')
     bids = BidAbstractSerializer(read_only=True, many=True)
-    
+
     class Meta:
         model = Listing
         fields = [
@@ -139,25 +142,27 @@ class ListingEditSerializer(
         ]
         read_only_fields = list(
             filter(
-                lambda field: field != 'public' and field != 'ended', 
+                lambda field: field != 'public' and field != 'ended',
                 fields
             )
         )
-            
+
     def validate(self, data):
         if hasattr(self, 'initial_data'):
-            invalid_keys = set(self.initial_data.keys()) - set(self.fields.keys())
+            invalid_keys = set(self.initial_data.keys()) - \
+                set(self.fields.keys())
             if invalid_keys:
                 raise ValidationError(
                     {'details': f'Got unknown field {invalid_keys.pop()}'}
                 )
         return data
-        
-        
+
+
 class AnswerSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='time', read_only=True)
-    author = serializers.CharField(source='author.get_full_name', read_only=True)
-    
+    author = serializers.CharField(
+        source='author.get_full_name', read_only=True)
+
     class Meta:
         model = Answer
         fields = [
@@ -165,21 +170,21 @@ class AnswerSerializer(serializers.ModelSerializer):
             'on',
             'body',
         ]
-        
-        
+
+
 class AnswerCreationSerializer(serializers.ModelSerializer):
     body = serializers.CharField(write_only=True)
-    
+
     class Meta:
         model = Answer
         fields = ['body']
-        
-        
+
+
 class QuestionSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='time', read_only=True)
     user = serializers.CharField(source='user.get_full_name', read_only=True)
     answer = AnswerSerializer(read_only=True)
-    
+
     class Meta:
         model = Question
         fields = [
@@ -189,12 +194,12 @@ class QuestionSerializer(serializers.ModelSerializer):
             'body',
             'answer',
         ]
-        
-        
+
+
 class DashboardSerializer(serializers.HyperlinkedModelSerializer):
     listings_count = serializers.SerializerMethodField()
     bids_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = User
         fields = [
@@ -206,17 +211,17 @@ class DashboardSerializer(serializers.HyperlinkedModelSerializer):
             'questions',
             'watchlist',
         ]
-        read_only_fields = '__all__'
+        read_only_fields = fields
         extra_kwargs = {
-            'listings': {'view_name': 'dashboard-listings'},
-            'bids': {'view_name': 'dashboard-bids'},
+            'listings': {'view_name': 'dashboard-listings-list'},
+            'bids': {'view_name': 'dashboard-bids-list'},
             'wins': {'view_name': 'dashboard-wins'},
             'questions': {'view_name': 'dashboard-questions'},
             'watchlist': {'view_name': 'dashboard-watchlist'},
         }
-        
+
     def get_listings_count(self, obj):
         return obj.listings.count()
-    
+
     def get_bids_count(self, obj):
         return obj.bids.count()
