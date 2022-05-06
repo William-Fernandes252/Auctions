@@ -268,8 +268,7 @@ class UnauthorizedRequestsTestCase(SetUp):
             API_BASE_URL +
             'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
             {'body': 'Yes.'},
-            format='json'
-        )
+            format='json')
         request.user = self.anonymous
         response = views.answer_question_view(
             request, listing_pk=2, question_pk=4)
@@ -469,8 +468,7 @@ class AutheticatedRequestsTestCase(SetUp):
             API_BASE_URL +
             'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
             {'body': 'Yes.'},
-            format='json'
-        )
+            format='json')
         request.user = self.user
         response = views.answer_question_view(
             request, listing_pk=2, question_pk=4)
@@ -483,8 +481,7 @@ class AutheticatedRequestsTestCase(SetUp):
             API_BASE_URL +
             'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
             {'body': 'Yes.'},
-            format='json'
-        )
+            format='json')
         author = models.Listing.objects.get(pk=2).author
         request.user = author
         response = views.answer_question_view(
