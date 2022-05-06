@@ -12,7 +12,7 @@ class MultipleSerializersMixin:
         """Instantiates and returns the serializer for the given action.
         """
         return self.serializer_classes.get(
-            self.action, self.serializer_classes.get('default'))
+            self.action, self.serializer_class)
 
 
 class ListingSerializerMixin:
