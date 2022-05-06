@@ -1,17 +1,16 @@
-from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers, exceptions
 from rest_framework_extensions import serializers as extended_serializers
-from auctions.models import Listing, Bid, Question, Answer
-from authentication.models import User
+from auctions import models
+from authentication import models as auth_models, serializers as auth_serializers
 from . import mixins
 
 
 class BidAbstractSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='creation_time', read_only=True)
-    user = serializers.CharField(source='user.get_full_name', read_only=True)
+    user = auth_serializers.UserSerializer(read_only=True)
 
     class Meta:
-        model = Bid
+        model = models.Bid
         fields = [
             'value',
             'user',
@@ -28,7 +27,7 @@ class ListingAbstractSerializer(serializers.ModelSerializer):
     current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
 
     class Meta:
-        model = Listing
+        model = models.Listing
         fields = [
             'title',
             'current_bid',
@@ -39,11 +38,11 @@ class ListingAbstractSerializer(serializers.ModelSerializer):
 
 class BidListSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='creation_time', read_only=True)
-    user = serializers.CharField(source='user.get_full_name', read_only=True)
+    user = auth_serializers.UserSerializer(read_only=True)
     listing = ListingAbstractSerializer(read_only=True)
 
     class Meta:
-        model = Bid
+        model = models.Bid
         fields = [
             'listing',
             'user',
@@ -63,7 +62,7 @@ class ListingListSerializer(
     current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
 
     class Meta:
-        model = Listing
+        model = models.Listing
         fields = [
             'id',
             'title',
@@ -78,8 +77,7 @@ class ListingDetailsSerializer(
         mixins.ListingSerializerMixin,
         serializers.ModelSerializer):
 
-    author = serializers.CharField(
-        source='author.get_full_name', read_only=True)
+    author = auth_serializers.UserSerializer(read_only=True)
     category = serializers.SerializerMethodField(read_only=True)
     current_bid = BidAbstractSerializer(source='bids.first')
     all_bids = serializers.HyperlinkedIdentityField(
@@ -88,7 +86,7 @@ class ListingDetailsSerializer(
     )
 
     class Meta:
-        model = Listing
+        model = models.Listing
         fields = [
             'id',
             'author',
@@ -107,7 +105,7 @@ class ListingDetailsSerializer(
 class ListingCreationSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Listing
+        model = models.Listing
         fields = [
             'title',
             'description',
@@ -128,7 +126,7 @@ class ListingEditSerializer(
     bids = BidAbstractSerializer(read_only=True, many=True)
 
     class Meta:
-        model = Listing
+        model = models.Listing
         fields = [
             'title',
             'description',
@@ -152,7 +150,7 @@ class ListingEditSerializer(
             invalid_keys = set(self.initial_data.keys()) - \
                 set(self.fields.keys())
             if invalid_keys:
-                raise ValidationError(
+                raise exceptions.ValidationError(
                     {'details': f'Got unknown field {invalid_keys.pop()}'}
                 )
         return data
@@ -160,11 +158,10 @@ class ListingEditSerializer(
 
 class AnswerSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='time', read_only=True)
-    author = serializers.CharField(
-        source='author.get_full_name', read_only=True)
+    author = auth_serializers.UserSerializer(read_only=True)
 
     class Meta:
-        model = Answer
+        model = models.Answer
         fields = [
             'author',
             'on',
@@ -176,17 +173,17 @@ class AnswerCreationSerializer(serializers.ModelSerializer):
     body = serializers.CharField(write_only=True)
 
     class Meta:
-        model = Answer
+        model = models.Answer
         fields = ['body']
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='time', read_only=True)
-    user = serializers.CharField(source='user.get_full_name', read_only=True)
+    user = auth_serializers.UserSerializer(read_only=True)
     answer = AnswerSerializer(read_only=True)
 
     class Meta:
-        model = Question
+        model = models.Question
         fields = [
             'id',
             'user',
@@ -201,7 +198,7 @@ class DashboardSerializer(serializers.HyperlinkedModelSerializer):
     bids_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
+        model = auth_models.User
         fields = [
             'listings_count',
             'listings',
