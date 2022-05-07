@@ -23,16 +23,16 @@ class ListingSerializerMixin:
 
 
 class ListingQuerysetMixin:
-    queryset = Listing.objects.active()
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        q = self.request.GET.get('q')
-        category = self.request.GET.get('category')
-        if q is not None:
-            queryset = queryset.search(query=q)
-        if category is not None:
-            queryset = queryset.from_category(category)
+        if self.action == 'list':
+            q = self.request.GET.get('q')
+            if q is not None:
+                queryset = queryset.search(query=q)
+            category = self.request.GET.get('category')
+            if category is not None:
+                queryset = queryset.from_category(category)
         return queryset
 
 
