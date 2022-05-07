@@ -84,13 +84,6 @@ class Listing(models.Model):
         self.creation_time = timezone.now()
         self.end_time = self.creation_time + \
             timezone.timedelta(days=self.duration)
-        if self.ended_manually \
-                and (current_bid := self.bids.all().first()) \
-                and not self.winner:
-            self.winner = current_bid.user
-        elif not 'test' in sys.argv:
-            tasks.set_listing_winner_task.apply_async(
-                (self.pk,), eta=self.end_time)
         super().save(*args, **kwargs)
 
     def is_finished(self):
@@ -108,6 +101,20 @@ class Listing(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.author.username})"
+
+
+@dispatch.receiver(models.signals.post_save, sender=Listing)
+def compute_listing_winner(sender, **kwargs):
+    listing = kwargs.get('instance')
+    if bool(listing.ended_manually and
+            (current_bid := listing.bids.all().first()) and
+            not listing.winner):
+        listing.winner = current_bid.user
+    elif kwargs.get('created') and not 'test' in sys.argv:
+        tasks.set_listing_winner_task.apply_async(
+            (listing.pk,),
+            eta=listing.end_time
+        )
 
 
 class Bid(models.Model):
