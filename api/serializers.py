@@ -58,6 +58,7 @@ class ListingListSerializer(
     url = serializers.HyperlinkedIdentityField(
         view_name='listing-detail',
         lookup_field='pk',
+        lookup_url_kwarg='parent_lookup_author'
     )
     current_bid = BidAbstractSerializer(source='bids.first', read_only=True)
 
@@ -81,8 +82,9 @@ class ListingDetailsSerializer(
     category = serializers.SerializerMethodField(read_only=True)
     current_bid = BidAbstractSerializer(source='bids.first')
     all_bids = serializers.HyperlinkedIdentityField(
-        view_name='listing-bids',
-        lookup_field='pk'
+        view_name='listing-bids-list',
+        lookup_field='pk',
+        lookup_url_kwarg='parent_lookup_listing'
     )
 
     class Meta:
@@ -213,7 +215,7 @@ class DashboardSerializer(serializers.HyperlinkedModelSerializer):
             'listings': {'view_name': 'dashboard-listings-list'},
             'bids': {'view_name': 'dashboard-bids-list'},
             'wins': {'view_name': 'dashboard-wins'},
-            'questions': {'view_name': 'dashboard-questions'},
+            'questions': {'view_name': 'dashboard-questions-list'},
             'watchlist': {'view_name': 'dashboard-watchlist'},
         }
 
