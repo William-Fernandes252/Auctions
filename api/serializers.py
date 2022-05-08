@@ -127,22 +127,19 @@ class ListingDetailSerializer(
 
     class Meta:
         model = models.Listing
-        exclude = ['winner', 'image', 'watchers', 'public']
-        read_only_fields = ['id', 'author', 'creation_time', 'end_time']
-
-
-class ListingCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Listing
         fields = [
+            'id',
+            'author',
             'title',
             'description',
             'category',
             'initial_price',
-            'duration',
-            'public',
+            'current_bid',
+            'all_bids',
+            'creation_time',
+            'end_time',
         ]
+        read_only_fields = ['id', 'author', 'creation_time', 'end_time']
 
 
 class ListingUpdateSerializer(
