@@ -1,7 +1,4 @@
-from django.test import TestCase
-from rest_framework.test import APIRequestFactory, APIClient
-from django.contrib.auth.models import AnonymousUser
-from api import views, viewsets
+from rest_framework import test, reverse as uri
 from auctions import models
 from authentication import models as auth_models
 
@@ -9,14 +6,12 @@ from authentication import models as auth_models
 API_BASE_URL = "/auctions/api"
 
 
-class SetUp(TestCase):
+class SetUp(test.APITestCase):
 
     def setUp(self):
         """Setup for test the auctions API endpoints
         """
         # Set the request factory, HTTP client, authenticated user and anonymous user
-        self.factory = APIRequestFactory(enforce_csrf_checks=False)
-        self.client = APIClient(enforce_csrf_checks=False)
         self.user = auth_models.User.objects.create(
             username='tester',
             email='tester.user@email.com',
@@ -25,7 +20,6 @@ class SetUp(TestCase):
         )
         self.user.set_password('QWERTY!@#')
         self.user.save()
-        self.anonymous = AnonymousUser()
 
         # Set instances of the models
         # Users
@@ -124,8 +118,9 @@ class SetUp(TestCase):
         models.Bid.objects.create(user=user2, listing=listing3, value=700)
         models.Bid.objects.create(user=user3, listing=listing2, value=14000)
         models.Bid.objects.create(user=user3, listing=listing4, value=10000.00)
-        models.Bid.objects.create(
-            user=self.user, listing=listing1, value=3000.00)
+        models.Bid.objects.create(user=self.user,
+                                  listing=listing1,
+                                  value=3000.00)
 
         # Answers
         question1.answer = models.Answer.objects.create(
@@ -147,11 +142,8 @@ class AuctionsAPITestCase(SetUp):
     def test_listing_list_view_pagination(self):
         """Test pagination of the data returned from listings list view
         """
-        request = self.factory.get(API_BASE_URL + '/listings/')
-        request.user = self.anonymous
-        response = viewsets.listing_list_view(request)
+        response = self.client.get(API_BASE_URL + '/listings/')
         self.assertEqual(response.status_code, 200)
-
         data = response.data
         self.assertEqual(data.get('count'), 4)
         self.assertIsNone(data.get('next'))
@@ -160,47 +152,39 @@ class AuctionsAPITestCase(SetUp):
     def test_listing_list_view_listing_data(self):
         """Test listing data from the listings list view
         """
-        request = self.factory.get(API_BASE_URL + '/listings/')
-        request.user = self.anonymous
-        response = viewsets.listing_list_view(request)
-
+        response = self.client.get(API_BASE_URL + '/listings/')
         result = response.data.get('results')[0]
         title = result.get('title')
         current_bid = result.get('current_bid')
-
         self.assertEqual(title, 'listing1')
         self.assertEqual(current_bid.get('value'), '3000.00')
-        self.assertEqual(current_bid.get('user'), 'Tester User')
+
+        user = current_bid.get('user')
+        self.assertEqual(user.get('name'), 'Tester User')
 
     def test_listing_search(self):
         """Test listings list endpoint data from a parameterized request
         """
-        request = self.factory.get(
+        response = self.client.get(
             API_BASE_URL + '/listings/',
             {'q': '2', 'category': 'vehicles'}
         )
-        request.user = self.anonymous
-        response = viewsets.listing_list_view(request)
-
         data = response.data
         self.assertEqual(data.get('count'), 1)
-
         result = data.get('results')[0]
         title = result.get('title')
         current_bid = result.get('current_bid')
-
         self.assertEqual(title, 'listing2')
         self.assertEqual(current_bid.get('value'), '14000.00')
-        self.assertEqual(current_bid.get('user'), 'User Three')
+
+        user = current_bid.get('user')
+        self.assertEqual(user.get('name'), 'User Three')
 
     def test_listing_details_view(self):
         """Test listing data from the listing details view
         """
-        request = self.factory.get(API_BASE_URL + '/listings/<int:pk>/')
-        request.user = self.anonymous
-        response = viewsets.listing_detail_view(request, pk=1)
+        response = self.client.get(API_BASE_URL + '/listings/1/')
         self.assertEqual(response.status_code, 200)
-
         listing_data = response.data
         self.assertEqual(listing_data.get('title'), 'listing1')
         self.assertEqual(listing_data.get('id'), 1)
@@ -214,15 +198,13 @@ class UnauthorizedRequestsTestCase(SetUp):
     def test_unauthenticated_bids_list_request(self):
         """Check forbidden status code for request without authentication
         """
-        request = self.factory.get(API_BASE_URL + '/bids/')
-        request.user = self.anonymous
-        response = views.bid_list_view(request)
+        response = self.client.get(API_BASE_URL + '/bids/')
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_listing_creation(self):
         """Test listing creation with unauthenticated user
         """
-        request = self.factory.post(
+        response = self.client.post(
             API_BASE_URL + '/listings/create/',
             {
                 'title': 'new_listing',
@@ -233,99 +215,83 @@ class UnauthorizedRequestsTestCase(SetUp):
             },
             form='json',
         )
-        request.user = self.anonymous
-        response = viewsets.listing_create_view(request)
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_bid_post(self):
         """Test bid posting with unauthenticated user
         """
-        request = self.factory.post(
-            API_BASE_URL + '/listings/<int:pk>/bids_create/',
+        response = self.client.post(
+            API_BASE_URL + '/listings/2/bids/',
             {'value': '15000.00'},
             format='json'
         )
-        request.user = self.anonymous
-        response = viewsets.listing_bids_view(request, pk=2)
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_question_post(self):
         """Test question post from unauthenticated request
         """
-        request = self.factory.post(
-            API_BASE_URL + 'listings/<int:pk>/questions_create/',
+        response = self.client.post(
+            API_BASE_URL + '/listings/3/questions/',
             {'body': 'Can I make a question?'},
             format='json'
         )
-        request.user = self.anonymous
-        response = viewsets.listing_questions_view(request, pk=3)
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_answer_post(self):
         """Test answer post from unauthenticated request
         """
-        request = self.factory.post(
+        response = self.client.post(
             API_BASE_URL +
-            'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
+            '/listings/2/questions/4/answer/',
             {'body': 'Yes.'},
-            format='json')
-        request.user = self.anonymous
-        response = views.answer_question_view(
-            request, listing_pk=2, question_pk=4)
+            format='json'
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_watchlist_access(self):
         """Test watchlist access with an unauthenticated request
         """
-        request = self.factory.get(API_BASE_URL + 'user/watchlist/')
-        request.user = self.anonymous
-        response = views.user_watchlist_api_view(request)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/watchlist/')
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_watch_post(self):
         """Test an unauthenticated post to the watch listing endpoint
         """
-        request = self.factory.post(
+        response = self.client.post(
             API_BASE_URL + '/listings/watch/',
             {'id': 3}
         )
-        request.user = self.anonymous
-        response = views.watch_listing(request)
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_user_listing_list_view(self):
         """Test unauthenticated user listings list endpoint request
         """
-        request = self.factory.get(API_BASE_URL + 'user/listings/')
-        request.user = self.anonymous
-        response = views.user_listing_list_view(request)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/listings/')
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_user_bid_list_view(self):
         """Test unauthenticated user bids list endpoint request
         """
-        request = self.factory.get(API_BASE_URL + 'user/bids/')
-        request.user = self.anonymous
-        response = views.user_bid_list_view(request)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/bids/')
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_user_listing_details_view(self):
         """Test unauthenticated user listing details endpoint request
         """
-        request = self.factory.get(API_BASE_URL + 'user/listings/<int:pk>')
-        request.user = self.anonymous
-        response = views.user_listing_details_view(request, pk=1)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/listings/1/')
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_edit_listing_view(self):
         """Test unauthenticated edit listing endpoint request
         """
-        request = self.factory.put(
-            API_BASE_URL + 'user/listings/<int:pk>/',
+        response = self.client.put(
+            API_BASE_URL + f'/dashboard/{self.user.id}/listings/4/',
             {'public': False, 'ended': False},
         )
-        request.user = self.anonymous
-        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 403)
 
 
@@ -334,52 +300,54 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_bid_list_view(self):
         """Test bid data from the bids list view
         """
-        request = self.factory.get(API_BASE_URL + '/bids/')
-        request.user = self.user
-        response = views.bid_list_view(request)
-        self.assertEqual(response.status_code, 200)
+        self.client.force_login(self.user)
+        response = self.client.get(API_BASE_URL + '/bids/')
 
+        self.assertEqual(response.status_code, 200)
         data = response.data
         self.assertEqual(data.get('count'), 7)
 
         result = data.get('results')[0]
         self.assertEqual(result.get('value'), '14000.00')
-        self.assertEqual(result.get('user'), 'User Three')
+
+        user = result.get('user')
+        self.assertEqual(user.get('name'), 'User Three')
 
         listing_data = result.get('listing')
         self.assertEqual(listing_data.get('title'), 'listing2')
 
-    def test_listing_bid_list_view(self):
+    def test_listing_bids_list_view(self):
         """Test bid data from the listing bids list view
         """
-        request = self.factory.get(
-            API_BASE_URL + '/listings/<int:pk>/bids_list/')
-        request.user = self.user
-        response = viewsets.listing_bids_view(request, pk=2)
+        self.client.force_login(self.user)
+        response = self.client.get(
+            API_BASE_URL + '/listings/2/bids/')
         self.assertEqual(response.status_code, 200)
 
         data = response.data
         self.assertEqual(len(data), 2)
         self.assertEqual(data[0].get('value'), '14000.00')
-        self.assertEqual(data[0].get('user'), 'User Three')
+
+        user = data[0].get('user')
+        self.assertEqual(user.get('name'), 'User Three')
 
     def test_bid_post(self):
         """Test bid posting with authenticated user
         """
-        request = self.factory.post(
-            API_BASE_URL + '/listings/<int:pk>/bids_create/',
+        self.client.force_login(self.user)
+        response = self.client.post(
+            API_BASE_URL + '/listings/2/bids/',
             {'value': '15000.00'},
             format='json'
         )
-        request.user = self.user
-        response = viewsets.listing_bids_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
 
     def test_listing_creation_with_invalid_duration(self):
         """Test listing creation with invalid duration
         """
-        request = self.factory.post(
-            API_BASE_URL + '/listings/create/',
+        self.client.force_login(self.user)
+        response = self.client.post(
+            API_BASE_URL + '/listings/',
             {
                 'title': 'new_listing',
                 'initial_price': 200,
@@ -389,15 +357,14 @@ class AutheticatedRequestsTestCase(SetUp):
             },
             form='json',
         )
-        request.user = self.user
-        response = viewsets.listing_create_view(request)
         self.assertEqual(response.status_code, 400)
 
     def test_listing_creation_with_invalid_category(self):
         """Test listing creation with invalid category
         """
-        request = self.factory.post(
-            API_BASE_URL + '/listings/create/',
+        self.client.force_login(self.user)
+        response = self.client.post(
+            API_BASE_URL + '/listings/',
             {
                 'title': 'new_listing',
                 'initial_price': 200,
@@ -407,15 +374,14 @@ class AutheticatedRequestsTestCase(SetUp):
             },
             form='json',
         )
-        request.user = self.user
-        response = viewsets.listing_create_view(request)
         self.assertEqual(response.status_code, 400)
 
     def test_listing_creation(self):
         """Test listing creation with valid data and authenticated user
         """
-        request = self.factory.post(
-            API_BASE_URL + '/listings/create/',
+        self.client.force_login(self.user)
+        response = self.client.post(
+            API_BASE_URL + '/listings/',
             {
                 'title': 'new_listing',
                 'description': 'This listing is valid.',
@@ -426,17 +392,13 @@ class AutheticatedRequestsTestCase(SetUp):
             },
             form='json',
         )
-        request.user = self.user
-        response = viewsets.listing_create_view(request)
         self.assertEqual(response.status_code, 201)
 
     def test_listing_questions_list_view(self):
         """Test questions data from the listing questions list view
         """
-        request = self.factory.get(
-            API_BASE_URL + 'listings/<int:pk>/questions_list/')
-        request.user = self.anonymous
-        response = viewsets.listing_questions_view(request, pk=3)
+        response = self.client.get(
+            API_BASE_URL + '/listings/3/questions/')
         self.assertEqual(response.status_code, 200)
 
         data = response.data
@@ -451,50 +413,61 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_question_post(self):
         """Test question post from authenticated request
         """
-        request = self.factory.post(
-            API_BASE_URL + 'listings/<int:pk>/questions_create/',
+        self.client.force_login(self.user)
+        response = self.client.post(
+            API_BASE_URL + '/listings/2/questions/',
             {'body': 'Can I make a question?'},
             format='json'
         )
-        request.user = self.user
-        response = viewsets.listing_questions_view(request, pk=2)
         self.assertEqual(response.status_code, 201)
 
     def test_unauthorized_answer_post(self):
         """Test answer post by an unauthorized user 
         (i.e., a user that is not the author of the listing) 
         """
-        request = self.factory.post(
-            API_BASE_URL +
-            'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
+        author = auth_models.User.objects.get(username='user2')
+        listing = models.Listing.objects.get(author=author.id)
+        question = listing.questions.first()
+        self.client.force_login(self.user)
+        response = self.client.post(
+            uri.reverse(
+                'listing-questions-answer',
+                kwargs={
+                    'parent_lookup_listing': listing.id,
+                    'pk': question.id,
+                }
+            ),
             {'body': 'Yes.'},
-            format='json')
-        request.user = self.user
-        response = views.answer_question_view(
-            request, listing_pk=2, question_pk=4)
+            format='json'
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_authorized_answer_post(self):
         """Test answer post by the author of the listing 
         """
-        request = self.factory.post(
-            API_BASE_URL +
-            'listings/<int:listing_pk>/questions_list/<int:question_pk>/answer/',
+        author = auth_models.User.objects.get(username='user2')
+        listing = models.Listing.objects.get(title='listing2')
+        question = listing.questions.first()
+        self.client.force_login(author)
+        response = self.client.post(
+            uri.reverse(
+                'listing-questions-answer',
+                kwargs={
+                    'parent_lookup_listing': listing.id,
+                    'pk': question.id,
+                }
+            ),
             {'body': 'Yes.'},
-            format='json')
-        author = models.Listing.objects.get(pk=2).author
-        request.user = author
-        response = views.answer_question_view(
-            request, listing_pk=2, question_pk=4)
+            format='json'
+        )
         self.assertEqual(response.status_code, 201)
 
     def test_user_listing_list_view(self):
         """Test user listings list endpoint
         """
-        request = self.factory.get(API_BASE_URL + 'user/listings/')
-        request.user = self.user
-        response = views.user_listing_list_view(request)
-
+        self.client.force_login(self.user)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/listings/')
         data = response.data
         self.assertEqual(data.get('count'), 1)
 
@@ -504,10 +477,9 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_user_bid_list_view(self):
         """Test user listings list endpoint
         """
-        request = self.factory.get(API_BASE_URL + 'user/listings/')
-        request.user = self.user
-        response = views.user_bid_list_view(request)
-
+        self.client.force_login(self.user)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/bids/')
         data = response.data
         self.assertEqual(data.get('count'), 1)
 
@@ -517,9 +489,9 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_user_listing_details_view(self):
         """Test user listing details endpoint data
         """
-        request = self.factory.get(API_BASE_URL + 'user/listings/<int:pk>/')
-        request.user = self.user
-        response = views.user_listing_details_view(request, pk=4)
+        self.client.force_login(self.user)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/listings/4/')
         self.assertEqual(response.status_code, 200)
 
         data = response.data
@@ -529,42 +501,42 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_invalid_edit_listing_view(self):
         """Test invalid edit listing endpoint request
         """
-        request = self.factory.put(
-            API_BASE_URL + 'user/listings/<int:pk>/',
+        self.client.force_login(self.user)
+        response = self.client.put(
+            API_BASE_URL + f'/dashboard/{self.user.id}/listings/4/',
             {'close': 'yes'},
         )
-        request.user = self.user
-        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 400)
 
     def test_edit_listing_view(self):
         """Test edit listing endpoint request
         """
-        request = self.factory.put(
-            API_BASE_URL + 'user/listings/<int:pk>/',
+        self.client.force_login(self.user)
+        response = self.client.put(
+            API_BASE_URL + f'/dashboard/{self.user.id}/listings/4/',
             {'public': False},
         )
-        request.user = self.user
-        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 200)
 
     def test_unauthorized_edit_listing_view(self):
-        """Test unauthorized edit listing endpoint request (i.e., a user trying to edit a listing of another user)
         """
-        request = self.factory.put(
-            API_BASE_URL + 'user/listings/<int:pk>/',
+        Test unauthorized edit listing endpoint request 
+        (i.e., a user trying to edit a listing of another user)
+        """
+        self.client.force_login(
+            auth_models.User.objects.get(username='user2'))
+        response = self.client.put(
+            API_BASE_URL + '/dashboard/listings/4/',
             {'public': False},
         )
-        request.user = auth_models.User.objects.get(username='user2')
-        response = views.user_listing_details_view(request, pk=4)
         self.assertEqual(response.status_code, 404)
 
     def test_watchlist_data(self):
         """Test watchlist access with an authenticated user
         """
-        request = self.factory.get(API_BASE_URL + 'user/watchlist/')
-        request.user = self.user
-        response = views.user_watchlist_api_view(request)
+        self.client.force_login(self.user)
+        response = self.client.get(
+            API_BASE_URL + f'/dashboard/{self.user.id}/watchlist/')
         self.assertEqual(response.status_code, 200)
 
         data = response.data
@@ -577,31 +549,9 @@ class AutheticatedRequestsTestCase(SetUp):
     def test_watch_post(self):
         """Test an authenticated watch post to the watch listing endpoint
         """
-        self.client.login(username='tester', password='QWERTY!@#')
+        self.client.force_login(self.user)
         response = self.client.post(
             API_BASE_URL + '/listings/watch/',
             {'id': 3}
         )
         self.assertEqual(response.status_code, 200)
-
-
-class ViewSetsTestCase(SetUp):
-
-    def test_bids_get_action(self):
-        """Test the bids action from the listings viewset with a get request
-        """
-        response = self.client.get(API_BASE_URL + '/listings/2/bids/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_bids_post_action(self):
-        """Test the bids action from the listings viewset with a post request
-        """
-        if self.client.login(username='tester', password='QWERTY!@#'):
-            response = self.client.post(
-                API_BASE_URL + '/listings/2/bids/',
-                {'value': '15000.00'},
-                format='json'
-            )
-            self.assertEqual(response.status_code, 201)
-        else:
-            raise AssertionError('Login failed')
