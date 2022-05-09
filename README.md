@@ -6,7 +6,7 @@ CS50w Auctions Project allong with a full featured API.
 
 ![REST API](/screenshots/api.jpg)
 
-## Get Started
+## About
 
 The course third project consists of a eBay-like e-commerce auction site, build with **Django**, that allow users to post auction listings, place bids on listings, comment on those listings, and add listings to a “watchlist”.
 
@@ -31,16 +31,7 @@ Also, during this project I could learn about
 -   Unit testing with Python unittest and the Django Tests extension for it;
 -   Docker consteiners and the importance of standardization of environments during web development for conpatibility assurence;
 -   Different database management systems and paradigms, like Redis, as a NoSQL database and PostgreSQL as relational database;
--   Design of APIs REST.
-
-In order to install and run it, follow the steps given bellow.
-
-## Installing and running
-
--   Clone this repository with `https://github.com/William-Fernandes252/Auctions.git`;
--   Install the dependencies for this project with `pip install -r requirements.txt`;
--   Inside of `/Auctions` run `python manage.py runserver`;
--   Finally, go to [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
+-   RESTfull APIs development.
 
 ## Project Snapshot
 
