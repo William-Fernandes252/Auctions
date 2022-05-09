@@ -58,4 +58,5 @@ class UserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='get_full_name', read_only=True)
 
     class Meta:
+        model = User
         fields = ('name', 'email')
