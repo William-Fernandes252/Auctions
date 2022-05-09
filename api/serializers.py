@@ -195,14 +195,6 @@ class AnswerSerializer(serializers.ModelSerializer):
         ]
 
 
-class AnswerCreationSerializer(serializers.ModelSerializer):
-    body = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = models.Answer
-        fields = ['body']
-
-
 class QuestionSerializer(serializers.ModelSerializer):
     on = serializers.DateTimeField(source='time', read_only=True)
     user = serializers.CharField(source='user.get_full_name', read_only=True)
@@ -219,9 +211,17 @@ class QuestionSerializer(serializers.ModelSerializer):
         ]
 
 
-class DashboardSerializer(serializers.HyperlinkedModelSerializer):
+class DashboardSerializer(serializers.ModelSerializer):
+    listings = serializers.SerializerMethodField(
+        method_name='get_listings_url'
+    )
+    bids = serializers.SerializerMethodField(
+        method_name='get_bids_url'
+    )
     listings_count = serializers.SerializerMethodField()
     bids_count = serializers.SerializerMethodField()
+    watchlist = serializers.SerializerMethodField()
+    wins = serializers.SerializerMethodField()
 
     class Meta:
         model = auth_models.User
@@ -234,23 +234,25 @@ class DashboardSerializer(serializers.HyperlinkedModelSerializer):
             'watchlist',
         ]
         read_only_fields = fields
-        extra_kwargs = {
-            'listings': {
-                'view_name': 'dashboard-listings-list',
-                'lookup_field': 'pk',
-                'lookup_url_kwarg': 'parent_lookup_author'
-            },
-            'bids': {
-                'view_name': 'dashboard-bids-list',
-                'lookup_field': 'pk',
-                'lookup_url_kwarg': 'parent_lookup_user'
-            },
-            'wins': {'view_name': 'dashboard-wins'},
-            'watchlist': {'view_name': 'dashboard-watchlist'},
-        }
+
+    def get_listings_url(self, obj):
+        kwargs = {'parent_lookup_author': obj.id}
+        return uri.reverse('dashboard-listings-list', kwargs=kwargs)
 
     def get_listings_count(self, obj):
         return obj.listings.count()
 
+    def get_bids_url(self, obj):
+        kwargs = {'parent_lookup_user': obj.id}
+        return uri.reverse('dashboard-bids-list', kwargs=kwargs)
+
     def get_bids_count(self, obj):
         return obj.bids.count()
+
+    def get_watchlist(self, obj):
+        kwargs = {'pk': obj.id}
+        return uri.reverse('dashboard-watchlist', kwargs=kwargs)
+
+    def get_wins(self, obj):
+        kwargs = {'pk': obj.id}
+        return uri.reverse('dashboard-wins', kwargs=kwargs)
